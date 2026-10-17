@@ -37,8 +37,8 @@ those where it:
 ## Legacy cryptography
 
 MD4, MD5 and HMAC-MD5 are used only because SMB's NTLMv2 authentication requires
-them. They live in `src/smb/ntlm.rs` and are called only during SMB session setup (and by the SMB tests that check it),
-to compute the NTLMv2 response and the session key that protocol derives. rcp does
-not rely on them for security anywhere else: file digests are SHA-256 or BLAKE3,
-`-md5` is accepted for compatibility but still computes the run's SHA-256 (or
-BLAKE3) digest, and TLS uses rustls.
+them. They live in `src/smb/ntlm.rs` and are called only during SMB session setup
+(and by the SMB tests that check it), to compute the NTLMv2 response and the session
+key that protocol derives. rcp does not rely on them for security anywhere else:
+file digests are SHA-256 or BLAKE3, `-md5` is accepted for compatibility but still
+computes the run's SHA-256 (or BLAKE3) digest, and TLS uses rustls.

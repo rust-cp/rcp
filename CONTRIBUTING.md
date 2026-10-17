@@ -24,6 +24,10 @@ Measure before claiming. A statement that something works, is fixed or is covere
 command that showed it. A failing test is a finding until a cause is shown, never a flake by
 assumption.
 
+New features must come with tests in the automated test suite (`cargo test`), and a bug fix
+comes with a test that fails without the fix. A pull request that changes behavior without a
+test is not ready to merge.
+
 ## Before you push
 
 ```sh

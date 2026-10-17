@@ -6,9 +6,7 @@ All notable changes to this project are documented here. The format follows
 
 ## [Unreleased]
 
-## [0.1.1] - not yet released
-
-Not yet released. Date this heading when 0.1.1 is cut.
+## [0.1.1] - 2026-10-17
 
 ### Changed
 

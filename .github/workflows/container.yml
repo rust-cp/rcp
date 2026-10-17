@@ -1,0 +1,66 @@
+name: Container
+on:
+  pull_request:
+  push:
+    branches: [main]
+permissions:
+  contents: read
+jobs:
+  container:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Build and record source dependencies
+        run: |
+          mkdir -p "$RUNNER_TEMP/container-evidence"
+          docker run --rm --mount "type=bind,source=$PWD,target=/src,readonly" --mount "type=bind,source=$RUNNER_TEMP/container-evidence,target=/output" -w /src \
+            docker.io/library/rust@sha256:ba3a8b9eb24de14c1879efe8acff7d4eb747723ca957e0d2409d0bc2ea9f84a7 \
+            bash -c 'set -euo pipefail; bash scripts/build-gnu.sh /output'
+      - name: Verify GLIBC 2.34 runtime and dynamic GSSAPI
+        run: |
+          docker build -f container/compatibility-test.Dockerfile -t localhost/rcp-glibc-test .
+          docker image inspect localhost/rcp-glibc-test > "$RUNNER_TEMP/container-evidence/compatibility-runtime.json"
+          docker run --rm --network none --read-only --cap-drop ALL --security-opt no-new-privileges --tmpfs /tmp:rw,noexec,nosuid,nodev \
+            --mount "type=bind,source=$PWD/scripts,target=/scripts,readonly" --mount "type=bind,source=$RUNNER_TEMP/container-evidence,target=/input,readonly" \
+            localhost/rcp-glibc-test python3 /scripts/glibc-runtime-smoke.py /input/rcp > "$RUNNER_TEMP/container-evidence/glibc-runtime-smoke.json"
+      - name: Package GNU x86-64 development candidate
+        run: |
+          python3 -m unittest discover -s scripts -p test_package_candidate.py
+          output="$RUNNER_TEMP/container-evidence"
+          printf '%s\n' \
+            'GNU/Linux x86-64; default protocol features plus rustls.' \
+            'Maximum allowed GLIBC ABI: 2.34; exact required versions in glibc-requirements.txt.' \
+            'Exact-binary native UBI9/GLIBC 2.34 smoke and host GSSAPI loading passed.' \
+            'Builder digest: sha256:ba3a8b9eb24de14c1879efe8acff7d4eb747723ca957e0d2409d0bc2ea9f84a7.' \
+            'Runtime digest: sha256:eba570d04193d1523a8576b1c0ff00e681c9edb1a41d4742559b6e3ff457601e.' \
+            'No FIPS claim. Development candidate, not a release.' > "$output/RUNTIME.txt"
+          python3 scripts/package-candidate.py --target x86_64-unknown-linux-gnu \
+            --binary "$output/rcp" --notices "$output/THIRD_PARTY_LICENSES.txt" \
+            --metadata "$output/cargo-metadata.json" --runtime "$output/RUNTIME.txt" \
+            --glibc "$output/glibc-requirements.txt" --output "$output"
+      - name: Build local image and test restrictions
+        run: |
+          python3 scripts/build-container.py --binary "$RUNNER_TEMP/container-evidence/rcp" --notices "$RUNNER_TEMP/container-evidence/THIRD_PARTY_LICENSES.txt" --image localhost/rcp:ci --revision "$GITHUB_SHA"
+          cc -Wall -Wextra -Werror container/hardening-probe.c -o "$RUNNER_TEMP/rcp-probe"
+          python3 scripts/container-smoke.py --image localhost/rcp:ci --probe "$RUNNER_TEMP/rcp-probe" --output "$RUNNER_TEMP/container-evidence/smoke"
+          docker image inspect localhost/rcp:ci > "$RUNNER_TEMP/container-evidence/image.json"
+          docker save localhost/rcp:ci -o "$RUNNER_TEMP/rcp-image.tar"
+          sha256sum "$RUNNER_TEMP/rcp-image.tar" > "$RUNNER_TEMP/container-evidence/archive.sha256"
+      - name: SBOM and vulnerability report
+        run: |
+          scripts/install-ci-tool.sh syft
+          scripts/install-ci-tool.sh grype
+          syft scan "docker-archive:$RUNNER_TEMP/rcp-image.tar" -o "syft-json=$RUNNER_TEMP/container-evidence/sbom.json" -o "spdx-json=$RUNNER_TEMP/container-evidence/sbom.spdx.json"
+          grype "sbom:$RUNNER_TEMP/container-evidence/sbom.json" -o json --file "$RUNNER_TEMP/container-evidence/vulnerabilities.json"
+          grype db status > "$RUNNER_TEMP/container-evidence/database.txt"
+          grype "sbom:$RUNNER_TEMP/container-evidence/sbom.json" --only-fixed --fail-on high
+      - name: Retain evidence even on failure
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: container-evidence
+          path: ${{ runner.temp }}/container-evidence
+          retention-days: 7

@@ -1,0 +1,8 @@
+PROFILE syncfs pid=1460 seconds=0.071204375 result=0
+isync: 122 files (1020552 bytes), 687 skipped, 21 directories, 0 symlinks, 41 removed, 0 linked, 0 moved; engine io_uring, 0.12 s, 7.8 MiB/s
+STATUS: PASSED
+PROFILE metadata pid=1460 operation=stat64 calls=0 nanoseconds=0
+PROFILE metadata pid=1460 operation=lstat64 calls=0 nanoseconds=0
+PROFILE metadata pid=1460 operation=fstat64 calls=0 nanoseconds=0
+PROFILE metadata pid=1460 operation=statx calls=1689 nanoseconds=2328108
+PROFILE metadata pid=1460 operation=readdir64 calls=1784 nanoseconds=613204

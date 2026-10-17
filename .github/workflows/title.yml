@@ -1,0 +1,28 @@
+name: Title
+
+# Pull requests are squash-merged, so the title becomes the commit on main. Checked on every
+# title edit as well as every push, so fixing the title fixes the check without a new commit.
+
+on:
+  pull_request:
+    types: [opened, edited, reopened, synchronize]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+jobs:
+  conventional-commit:
+    name: conventional-commit
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      # the title arrives through the environment, never interpolated into the script
+      - run: scripts/check-title.sh "$TITLE"
+        env:
+          TITLE: ${{ github.event.pull_request.title }}

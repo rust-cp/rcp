@@ -1,0 +1,3 @@
+#!/bin/sh
+# ssh with the suite's key and host settings, for rcp's own ssh:// and -nodes dials
+exec ssh -F /etc/rcp-ssh/config "$@"

@@ -1,0 +1,4 @@
+workload,case,tool,runs,median_command_ms,median_external_flush_ms,median_verification_ms,median_completion_ms,min_completion_ms,max_completion_ms
+mixed,changed,rclone,5,106.553869,95.892989,112.139756,314.586614,265.946591,469.156361
+mixed,changed,rcp,5,122.035007,35.08733,130.075813,299.769308,240.310598,437.416359
+mixed,changed,rsync,5,80.240315,85.068142,111.441811,279.700426,235.472318,412.812564

@@ -1,0 +1,102 @@
+name: Interop
+
+# Every network endpoint against a real server in a container: copy up, verify, copy back,
+# and the server's own view of what arrived. The contract suite runs the same adapters
+# against in-process stand-ins; this is where they meet the implementations people run.
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+  merge_group:
+  workflow_dispatch:
+  schedule:
+    # weekly, so an image tag that moves under us shows up without a code change
+    - cron: "17 6 * * 1"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+env:
+  CARGO_TERM_COLOR: always
+  CARGO_INCREMENTAL: 0
+
+jobs:
+  interop:
+    name: interop (${{ matrix.endpoint }})
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    strategy:
+      fail-fast: false
+      matrix:
+        endpoint: [s3, oci, https, dav, sftp, ssh, smb, nfs, hdfs]
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - run: rustup toolchain install stable --profile minimal && rustup default stable
+      - uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: |
+            ~/.cargo/registry
+            target
+          key: interop-${{ runner.os }}-${{ hashFiles('Cargo.lock') }}
+      # Static CI fixture, so the same binary serves ssh:// inside the server image.
+      # Published release archives use dynamic GNU libc linkage.
+      - name: Build
+        run: |
+          RUSTFLAGS='-C target-feature=+crt-static' \
+            cargo build --release --locked --features rustls --target x86_64-unknown-linux-gnu
+      - name: Run against a real ${{ matrix.endpoint }} server
+        run: scripts/interop.sh "$ENDPOINT"
+        env:
+          ENDPOINT: ${{ matrix.endpoint }}
+          RCP: target/x86_64-unknown-linux-gnu/release/rcp
+
+  # The multi-host features, on a k3s cluster the playbook brings up: -nodes over a fleet of
+  # ssh pods, -via through a hop to a pod only a hop may reach, rcps:// with mTLS, and NFS
+  # under Kerberos against an MIT KDC and NFS-Ganesha.
+  k3s:
+    name: interop (k3s multi-host)
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - run: rustup toolchain install stable --profile minimal && rustup default stable
+      - uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: |
+            ~/.cargo/registry
+            target
+          key: interop-${{ runner.os }}-${{ hashFiles('Cargo.lock') }}
+      # static, since every pod runs the same binary from a hostPath mount; and dynamic as well,
+      # for the Kerberos client, since only a dynamically linked rcp can load the system GSSAPI
+      - name: Build
+        run: |
+          RUSTFLAGS='-C target-feature=+crt-static' \
+            cargo build --release --locked --features rustls --target x86_64-unknown-linux-gnu
+          cargo build --release --locked --features rustls
+      - name: Ansible
+        run: |
+          python3 -m venv "$RUNNER_TEMP/ansible"
+          "$RUNNER_TEMP/ansible/bin/python" -m pip install --require-hashes -r interop/k3s/requirements.txt
+          echo "$RUNNER_TEMP/ansible/bin" >> "$GITHUB_PATH"
+      - name: Bring up k3s and the suite's pods
+        run: ansible-playbook interop/k3s/playbook.yml
+        env:
+          RCP: target/x86_64-unknown-linux-gnu/release/rcp
+          RCP_DYN: target/release/rcp
+      - name: Run the scenarios
+        run: interop/k3s/tests.sh
+      - name: What the cluster looked like
+        if: failure()
+        run: |
+          kubectl -n rcp-interop get pods -o wide || true
+          kubectl -n rcp-interop describe pods | tail -n 120 || true
+          sudo tail -n 60 /var/log/k3s.log || true

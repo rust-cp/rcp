@@ -1,0 +1,10 @@
+PROFILE metadata pid=1586 operation=stat64 calls=0 nanoseconds=0
+PROFILE metadata pid=1586 operation=lstat64 calls=0 nanoseconds=0
+PROFILE metadata pid=1586 operation=fstat64 calls=0 nanoseconds=0
+PROFILE metadata pid=1586 operation=statx calls=0 nanoseconds=0
+PROFILE metadata pid=1586 operation=readdir64 calls=0 nanoseconds=0
+PROFILE metadata pid=1584 operation=stat64 calls=0 nanoseconds=0
+PROFILE metadata pid=1584 operation=lstat64 calls=0 nanoseconds=0
+PROFILE metadata pid=1584 operation=fstat64 calls=0 nanoseconds=0
+PROFILE metadata pid=1584 operation=statx calls=0 nanoseconds=0
+PROFILE metadata pid=1584 operation=readdir64 calls=0 nanoseconds=0

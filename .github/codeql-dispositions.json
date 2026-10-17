@@ -1,0 +1,1635 @@
+{
+  "schemaVersion": 2,
+  "status": "individually_reviewed",
+  "reviewedFindingCount": 36,
+  "findings": [
+    {
+      "ruleId": "rust/hard-coded-cryptographic-value",
+      "path": "src/smb/conn.rs",
+      "partialFingerprints": {
+        "primaryLocationLineHash": "5805a25bcdfb5326:1"
+      },
+      "scannedStartLine": 1888,
+      "classification": "false_positive",
+      "owningFunction": "a_real_server_negotiates_authenticates_and_connects_a_share",
+      "reason": "Test starts its own local impacket SMB fixture, uses its synthetic paired credential, tests deliberate wrong-password refusal, and tears the fixture down. This specific finding is not reachable in a non-test build.",
+      "cfgTestEvidence": [
+        {
+          "path": "src/smb/conn.rs",
+          "line": 1489,
+          "attribute": "#[cfg(test)]",
+          "scope": "mod tests"
+        },
+        {
+          "path": "src/smb/conn.rs",
+          "line": 1856,
+          "scope": "tests::a_real_server_negotiates_authenticates_and_connects_a_share"
+        }
+      ],
+      "sourceHashes": {
+        "src/smb/conn.rs": "b77ad5d5a7d55a2d8d41fa10646e86eca1d1ed06c2b718c0efa240f32e965634"
+      },
+      "scope": "test_fixture",
+      "flowDigest": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    {
+      "ruleId": "rust/hard-coded-cryptographic-value",
+      "path": "src/smb/conn.rs",
+      "partialFingerprints": {
+        "primaryLocationLineHash": "c8365991255be28a:1"
+      },
+      "scannedStartLine": 1897,
+      "classification": "false_positive",
+      "owningFunction": "a_real_server_negotiates_authenticates_and_connects_a_share",
+      "reason": "Test starts its own local impacket SMB fixture, uses its synthetic paired credential, tests deliberate wrong-password refusal, and tears the fixture down. This specific finding is not reachable in a non-test build.",
+      "cfgTestEvidence": [
+        {
+          "path": "src/smb/conn.rs",
+          "line": 1489,
+          "attribute": "#[cfg(test)]",
+          "scope": "mod tests"
+        },
+        {
+          "path": "src/smb/conn.rs",
+          "line": 1856,
+          "scope": "tests::a_real_server_negotiates_authenticates_and_connects_a_share"
+        }
+      ],
+      "sourceHashes": {
+        "src/smb/conn.rs": "b77ad5d5a7d55a2d8d41fa10646e86eca1d1ed06c2b718c0efa240f32e965634"
+      },
+      "scope": "test_fixture",
+      "flowDigest": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    {
+      "ruleId": "rust/hard-coded-cryptographic-value",
+      "path": "src/smb/conn.rs",
+      "partialFingerprints": {
+        "primaryLocationLineHash": "49f641127a5a4c80:1"
+      },
+      "scannedStartLine": 1905,
+      "classification": "false_positive",
+      "owningFunction": "a_real_server_negotiates_authenticates_and_connects_a_share",
+      "reason": "Test starts its own local impacket SMB fixture, uses its synthetic paired credential, tests deliberate wrong-password refusal, and tears the fixture down. This specific finding is not reachable in a non-test build.",
+      "cfgTestEvidence": [
+        {
+          "path": "src/smb/conn.rs",
+          "line": 1489,
+          "attribute": "#[cfg(test)]",
+          "scope": "mod tests"
+        },
+        {
+          "path": "src/smb/conn.rs",
+          "line": 1856,
+          "scope": "tests::a_real_server_negotiates_authenticates_and_connects_a_share"
+        }
+      ],
+      "sourceHashes": {
+        "src/smb/conn.rs": "b77ad5d5a7d55a2d8d41fa10646e86eca1d1ed06c2b718c0efa240f32e965634"
+      },
+      "scope": "test_fixture",
+      "flowDigest": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    {
+      "ruleId": "rust/hard-coded-cryptographic-value",
+      "path": "src/smb/client.rs",
+      "partialFingerprints": {
+        "primaryLocationLineHash": "2d31333d8e37845e:1"
+      },
+      "scannedStartLine": 2674,
+      "classification": "false_positive",
+      "owningFunction": "a_real_read_carries_the_charge_its_payload_asks_for",
+      "reason": "Synthetic local impacket fixture login establishes a test session to verify SMB credit charging for actual reads; the paired peer credential is not a deployed account. This specific finding is not reachable in a non-test build.",
+      "cfgTestEvidence": [
+        {
+          "path": "src/smb/client.rs",
+          "line": 2375,
+          "attribute": "#[cfg(test)]",
+          "scope": "mod tests"
+        },
+        {
+          "path": "src/smb/client.rs",
+          "line": 2658,
+          "scope": "tests::a_real_read_carries_the_charge_its_payload_asks_for"
+        }
+      ],
+      "sourceHashes": {
+        "src/smb/client.rs": "d4dae30f02a4cd3b8275f9a927d5bdf59b0e68b45816b75c4b6a5048ffbb7a40"
+      },
+      "scope": "test_fixture",
+      "flowDigest": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    {
+      "ruleId": "rust/hard-coded-cryptographic-value",
+      "path": "src/smb/conn.rs",
+      "partialFingerprints": {
+        "primaryLocationLineHash": "8085276c546960b4:1"
+      },
+      "scannedStartLine": 2221,
+      "classification": "false_positive",
+      "owningFunction": "the_final_session_setup_must_be_signed_by_the_key_this_login_derived",
+      "reason": "Deliberately wrong synthetic password against local scripted signing peer must be refused because the final reply cannot authenticate under the derived key. This specific finding is not reachable in a non-test build.",
+      "cfgTestEvidence": [
+        {
+          "path": "src/smb/conn.rs",
+          "line": 1489,
+          "attribute": "#[cfg(test)]",
+          "scope": "mod tests"
+        },
+        {
+          "path": "src/smb/conn.rs",
+          "line": 2199,
+          "scope": "tests::the_final_session_setup_must_be_signed_by_the_key_this_login_derived"
+        }
+      ],
+      "sourceHashes": {
+        "src/smb/conn.rs": "b77ad5d5a7d55a2d8d41fa10646e86eca1d1ed06c2b718c0efa240f32e965634"
+      },
+      "scope": "test_fixture",
+      "flowDigest": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    {
+      "ruleId": "rust/hard-coded-cryptographic-value",
+      "path": "src/smb/conn.rs",
+      "partialFingerprints": {
+        "primaryLocationLineHash": "55f1ae0b7aa5902b:1"
+      },
+      "scannedStartLine": 2251,
+      "classification": "false_positive",
+      "owningFunction": "a_wrong_password_is_refused_by_the_peer_not_merely_mis_keyed",
+      "reason": "Wrong-password negative control against local scripted peer asserts PermissionDenied; a subsequent fixture-password login is the positive control. This specific finding is not reachable in a non-test build.",
+      "cfgTestEvidence": [
+        {
+          "path": "src/smb/conn.rs",
+          "line": 1489,
+          "attribute": "#[cfg(test)]",
+          "scope": "mod tests"
+        },
+        {
+          "path": "src/smb/conn.rs",
+          "line": 2245,
+          "scope": "tests::a_wrong_password_is_refused_by_the_peer_not_merely_mis_keyed"
+        }
+      ],
+      "sourceHashes": {
+        "src/smb/conn.rs": "b77ad5d5a7d55a2d8d41fa10646e86eca1d1ed06c2b718c0efa240f32e965634"
+      },
+      "scope": "test_fixture",
+      "flowDigest": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    {
+      "ruleId": "rust/hard-coded-cryptographic-value",
+      "path": "src/smb/client.rs",
+      "partialFingerprints": {
+        "primaryLocationLineHash": "dbbae195317c12ed:1"
+      },
+      "scannedStartLine": 2860,
+      "classification": "false_positive",
+      "owningFunction": "a_rejected_password_reaches_the_server_at_most_the_budget_however_many_workers_ask",
+      "reason": "Deliberately rejected synthetic password is offered to the local scripted Reject peer to verify concurrent credential-budget bounds. This specific finding is not reachable in a non-test build.",
+      "cfgTestEvidence": [
+        {
+          "path": "src/smb/client.rs",
+          "line": 2375,
+          "attribute": "#[cfg(test)]",
+          "scope": "mod tests"
+        },
+        {
+          "path": "src/smb/client.rs",
+          "line": 2856,
+          "scope": "tests::a_rejected_password_reaches_the_server_at_most_the_budget_however_many_workers_ask"
+        }
+      ],
+      "sourceHashes": {
+        "src/smb/client.rs": "d4dae30f02a4cd3b8275f9a927d5bdf59b0e68b45816b75c4b6a5048ffbb7a40"
+      },
+      "scope": "test_fixture",
+      "flowDigest": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    {
+      "ruleId": "rust/hard-coded-cryptographic-value",
+      "path": "src/smb/conn.rs",
+      "partialFingerprints": {
+        "primaryLocationLineHash": "d4033ba3e33b0893:1"
+      },
+      "scannedStartLine": 2284,
+      "classification": "false_positive",
+      "owningFunction": "a_guest_session_for_a_named_user_is_refused",
+      "reason": "Synthetic local Guest peer tests named-user refusal and explicit anonymous-login control; no persistent account or production key is configured. This specific finding is not reachable in a non-test build.",
+      "cfgTestEvidence": [
+        {
+          "path": "src/smb/conn.rs",
+          "line": 1489,
+          "attribute": "#[cfg(test)]",
+          "scope": "mod tests"
+        },
+        {
+          "path": "src/smb/conn.rs",
+          "line": 2267,
+          "scope": "tests::a_guest_session_for_a_named_user_is_refused"
+        }
+      ],
+      "sourceHashes": {
+        "src/smb/conn.rs": "b77ad5d5a7d55a2d8d41fa10646e86eca1d1ed06c2b718c0efa240f32e965634"
+      },
+      "scope": "test_fixture",
+      "flowDigest": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    {
+      "ruleId": "rust/hard-coded-cryptographic-value",
+      "path": "src/smb/client.rs",
+      "partialFingerprints": {
+        "primaryLocationLineHash": "b39fbb408e775fb1:1"
+      },
+      "scannedStartLine": 3093,
+      "classification": "false_positive",
+      "owningFunction": "a_success_for_one_credential_does_not_clear_another_credentials_failures",
+      "reason": "Synthetic wrong-password and accepted-password local peers share a budget solely to test isolation between credential failures. This specific finding is not reachable in a non-test build.",
+      "cfgTestEvidence": [
+        {
+          "path": "src/smb/client.rs",
+          "line": 2375,
+          "attribute": "#[cfg(test)]",
+          "scope": "mod tests"
+        },
+        {
+          "path": "src/smb/client.rs",
+          "line": 3088,
+          "scope": "tests::a_success_for_one_credential_does_not_clear_another_credentials_failures"
+        }
+      ],
+      "sourceHashes": {
+        "src/smb/client.rs": "d4dae30f02a4cd3b8275f9a927d5bdf59b0e68b45816b75c4b6a5048ffbb7a40"
+      },
+      "scope": "test_fixture",
+      "flowDigest": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    {
+      "ruleId": "rust/hard-coded-cryptographic-value",
+      "path": "src/smb/conn.rs",
+      "partialFingerprints": {
+        "primaryLocationLineHash": "7615da7fc2318e2d:1"
+      },
+      "scannedStartLine": 2669,
+      "classification": "false_positive",
+      "owningFunction": "the_ntlmssp_messages_have_the_shape_a_server_reads",
+      "reason": "Fixed synthetic inputs generate an NTLMSSP message for payload-offset/layout assertions, not a production login. This specific finding is not reachable in a non-test build.",
+      "cfgTestEvidence": [
+        {
+          "path": "src/smb/conn.rs",
+          "line": 1489,
+          "attribute": "#[cfg(test)]",
+          "scope": "mod tests"
+        },
+        {
+          "path": "src/smb/conn.rs",
+          "line": 2638,
+          "scope": "tests::the_ntlmssp_messages_have_the_shape_a_server_reads"
+        }
+      ],
+      "sourceHashes": {
+        "src/smb/conn.rs": "b77ad5d5a7d55a2d8d41fa10646e86eca1d1ed06c2b718c0efa240f32e965634"
+      },
+      "scope": "test_fixture",
+      "flowDigest": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    {
+      "ruleId": "rust/hard-coded-cryptographic-value",
+      "path": "src/smb/ntlm.rs",
+      "partialFingerprints": {
+        "primaryLocationLineHash": "62722cba1da8a911:1"
+      },
+      "scannedStartLine": 313,
+      "classification": "false_positive",
+      "owningFunction": "ntowf_v2_matches_the_ms_nlmp_worked_example",
+      "reason": "Public MS-NLMP worked-example inputs reproduce the published NTOWFv2 answer and username/domain uppercase asymmetry; these are interoperability vectors, not operational credentials. This specific finding is not reachable in a non-test build.",
+      "cfgTestEvidence": [
+        {
+          "path": "src/smb/ntlm.rs",
+          "line": 203,
+          "attribute": "#[cfg(test)]",
+          "scope": "mod tests"
+        },
+        {
+          "path": "src/smb/ntlm.rs",
+          "line": 306,
+          "scope": "tests::ntowf_v2_matches_the_ms_nlmp_worked_example"
+        }
+      ],
+      "sourceHashes": {
+        "src/smb/ntlm.rs": "f94c9eee3d667062b11d34c61d650a147fe897c2b091f133b4262848bf19aa08"
+      },
+      "scope": "test_fixture",
+      "flowDigest": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    {
+      "ruleId": "rust/hard-coded-cryptographic-value",
+      "path": "src/smb/client.rs",
+      "partialFingerprints": {
+        "primaryLocationLineHash": "6357ec59518621d1:1"
+      },
+      "scannedStartLine": 3445,
+      "classification": "false_positive",
+      "owningFunction": "the_credential_fingerprint_is_stable_and_scoped_to_the_server",
+      "reason": "Fixed synthetic inputs to credential_id test case normalization, user/password distinction and server-port scoping; no login occurs in this function. This specific finding is not reachable in a non-test build.",
+      "cfgTestEvidence": [
+        {
+          "path": "src/smb/client.rs",
+          "line": 2375,
+          "attribute": "#[cfg(test)]",
+          "scope": "mod tests"
+        },
+        {
+          "path": "src/smb/client.rs",
+          "line": 3440,
+          "scope": "tests::the_credential_fingerprint_is_stable_and_scoped_to_the_server"
+        }
+      ],
+      "sourceHashes": {
+        "src/smb/client.rs": "d4dae30f02a4cd3b8275f9a927d5bdf59b0e68b45816b75c4b6a5048ffbb7a40"
+      },
+      "scope": "test_fixture",
+      "flowDigest": "c45282ff1a9dc7740920d2193adc29ffa1bbeec989e694881455287d6650c2e1"
+    },
+    {
+      "ruleId": "rust/hard-coded-cryptographic-value",
+      "path": "src/smb/client.rs",
+      "partialFingerprints": {
+        "primaryLocationLineHash": "2c7c620d79005cc1:1"
+      },
+      "scannedStartLine": 3446,
+      "classification": "false_positive",
+      "owningFunction": "the_credential_fingerprint_is_stable_and_scoped_to_the_server",
+      "reason": "Fixed synthetic inputs to credential_id test case normalization, user/password distinction and server-port scoping; no login occurs in this function. This specific finding is not reachable in a non-test build.",
+      "cfgTestEvidence": [
+        {
+          "path": "src/smb/client.rs",
+          "line": 2375,
+          "attribute": "#[cfg(test)]",
+          "scope": "mod tests"
+        },
+        {
+          "path": "src/smb/client.rs",
+          "line": 3440,
+          "scope": "tests::the_credential_fingerprint_is_stable_and_scoped_to_the_server"
+        }
+      ],
+      "sourceHashes": {
+        "src/smb/client.rs": "d4dae30f02a4cd3b8275f9a927d5bdf59b0e68b45816b75c4b6a5048ffbb7a40"
+      },
+      "scope": "test_fixture",
+      "flowDigest": "5a1d1da926169e52a4505953bef48d14b95c7cc91ecb6f1aabdaa0a397c38546"
+    },
+    {
+      "ruleId": "rust/hard-coded-cryptographic-value",
+      "path": "src/smb/client.rs",
+      "partialFingerprints": {
+        "primaryLocationLineHash": "25568c0092be179b:1"
+      },
+      "scannedStartLine": 3450,
+      "classification": "false_positive",
+      "owningFunction": "the_credential_fingerprint_is_stable_and_scoped_to_the_server",
+      "reason": "Fixed synthetic inputs to credential_id test case normalization, user/password distinction and server-port scoping; no login occurs in this function. This specific finding is not reachable in a non-test build.",
+      "cfgTestEvidence": [
+        {
+          "path": "src/smb/client.rs",
+          "line": 2375,
+          "attribute": "#[cfg(test)]",
+          "scope": "mod tests"
+        },
+        {
+          "path": "src/smb/client.rs",
+          "line": 3440,
+          "scope": "tests::the_credential_fingerprint_is_stable_and_scoped_to_the_server"
+        }
+      ],
+      "sourceHashes": {
+        "src/smb/client.rs": "d4dae30f02a4cd3b8275f9a927d5bdf59b0e68b45816b75c4b6a5048ffbb7a40"
+      },
+      "scope": "test_fixture",
+      "flowDigest": "4a18b884091a10271662c5372d197bfab7de6f91dd58a6bfc39fca21b4e683c9"
+    },
+    {
+      "ruleId": "rust/hard-coded-cryptographic-value",
+      "path": "src/smb/client.rs",
+      "partialFingerprints": {
+        "primaryLocationLineHash": "4377dec2969fdeb3:1"
+      },
+      "scannedStartLine": 3451,
+      "classification": "false_positive",
+      "owningFunction": "the_credential_fingerprint_is_stable_and_scoped_to_the_server",
+      "reason": "Fixed synthetic inputs to credential_id test case normalization, user/password distinction and server-port scoping; no login occurs in this function. This specific finding is not reachable in a non-test build.",
+      "cfgTestEvidence": [
+        {
+          "path": "src/smb/client.rs",
+          "line": 2375,
+          "attribute": "#[cfg(test)]",
+          "scope": "mod tests"
+        },
+        {
+          "path": "src/smb/client.rs",
+          "line": 3440,
+          "scope": "tests::the_credential_fingerprint_is_stable_and_scoped_to_the_server"
+        }
+      ],
+      "sourceHashes": {
+        "src/smb/client.rs": "d4dae30f02a4cd3b8275f9a927d5bdf59b0e68b45816b75c4b6a5048ffbb7a40"
+      },
+      "scope": "test_fixture",
+      "flowDigest": "0257f27527c4f16331f07e449518d65d896ade22d3a4d315523d4936231c0ed9"
+    },
+    {
+      "ruleId": "rust/hard-coded-cryptographic-value",
+      "path": "src/smb/client.rs",
+      "partialFingerprints": {
+        "primaryLocationLineHash": "6113ac9f756c9004:1"
+      },
+      "scannedStartLine": 3455,
+      "classification": "false_positive",
+      "owningFunction": "the_credential_fingerprint_is_stable_and_scoped_to_the_server",
+      "reason": "Fixed synthetic inputs to credential_id test case normalization, user/password distinction and server-port scoping; no login occurs in this function. This specific finding is not reachable in a non-test build.",
+      "cfgTestEvidence": [
+        {
+          "path": "src/smb/client.rs",
+          "line": 2375,
+          "attribute": "#[cfg(test)]",
+          "scope": "mod tests"
+        },
+        {
+          "path": "src/smb/client.rs",
+          "line": 3440,
+          "scope": "tests::the_credential_fingerprint_is_stable_and_scoped_to_the_server"
+        }
+      ],
+      "sourceHashes": {
+        "src/smb/client.rs": "d4dae30f02a4cd3b8275f9a927d5bdf59b0e68b45816b75c4b6a5048ffbb7a40"
+      },
+      "scope": "test_fixture",
+      "flowDigest": "6fea633c44570a14a31b2561d315d91e22866fc8823024efeffd96d5afbb715f"
+    },
+    {
+      "ruleId": "rust/hard-coded-cryptographic-value",
+      "path": "src/smb/client.rs",
+      "partialFingerprints": {
+        "primaryLocationLineHash": "3fd5d45a124b4794:1"
+      },
+      "scannedStartLine": 3456,
+      "classification": "false_positive",
+      "owningFunction": "the_credential_fingerprint_is_stable_and_scoped_to_the_server",
+      "reason": "Fixed synthetic inputs to credential_id test case normalization, user/password distinction and server-port scoping; no login occurs in this function. This specific finding is not reachable in a non-test build.",
+      "cfgTestEvidence": [
+        {
+          "path": "src/smb/client.rs",
+          "line": 2375,
+          "attribute": "#[cfg(test)]",
+          "scope": "mod tests"
+        },
+        {
+          "path": "src/smb/client.rs",
+          "line": 3440,
+          "scope": "tests::the_credential_fingerprint_is_stable_and_scoped_to_the_server"
+        }
+      ],
+      "sourceHashes": {
+        "src/smb/client.rs": "d4dae30f02a4cd3b8275f9a927d5bdf59b0e68b45816b75c4b6a5048ffbb7a40"
+      },
+      "scope": "test_fixture",
+      "flowDigest": "97d30863aa83f893816a81cf3723dd16e62ab0c90f866e0c420d8c45ae529444"
+    },
+    {
+      "ruleId": "rust/hard-coded-cryptographic-value",
+      "path": "src/smb/client.rs",
+      "partialFingerprints": {
+        "primaryLocationLineHash": "efad4763bac600fb:1"
+      },
+      "scannedStartLine": 3460,
+      "classification": "false_positive",
+      "owningFunction": "the_credential_fingerprint_is_stable_and_scoped_to_the_server",
+      "reason": "Fixed synthetic inputs to credential_id test case normalization, user/password distinction and server-port scoping; no login occurs in this function. This specific finding is not reachable in a non-test build.",
+      "cfgTestEvidence": [
+        {
+          "path": "src/smb/client.rs",
+          "line": 2375,
+          "attribute": "#[cfg(test)]",
+          "scope": "mod tests"
+        },
+        {
+          "path": "src/smb/client.rs",
+          "line": 3440,
+          "scope": "tests::the_credential_fingerprint_is_stable_and_scoped_to_the_server"
+        }
+      ],
+      "sourceHashes": {
+        "src/smb/client.rs": "d4dae30f02a4cd3b8275f9a927d5bdf59b0e68b45816b75c4b6a5048ffbb7a40"
+      },
+      "scope": "test_fixture",
+      "flowDigest": "b038cabe40215f2c8389884f59e052e8f0b8b734a402d8e69acbd3b77f013182"
+    },
+    {
+      "ruleId": "rust/hard-coded-cryptographic-value",
+      "path": "src/smb/client.rs",
+      "partialFingerprints": {
+        "primaryLocationLineHash": "dd84d9afa2afc2e3:1"
+      },
+      "scannedStartLine": 3461,
+      "classification": "false_positive",
+      "owningFunction": "the_credential_fingerprint_is_stable_and_scoped_to_the_server",
+      "reason": "Fixed synthetic inputs to credential_id test case normalization, user/password distinction and server-port scoping; no login occurs in this function. This specific finding is not reachable in a non-test build.",
+      "cfgTestEvidence": [
+        {
+          "path": "src/smb/client.rs",
+          "line": 2375,
+          "attribute": "#[cfg(test)]",
+          "scope": "mod tests"
+        },
+        {
+          "path": "src/smb/client.rs",
+          "line": 3440,
+          "scope": "tests::the_credential_fingerprint_is_stable_and_scoped_to_the_server"
+        }
+      ],
+      "sourceHashes": {
+        "src/smb/client.rs": "d4dae30f02a4cd3b8275f9a927d5bdf59b0e68b45816b75c4b6a5048ffbb7a40"
+      },
+      "scope": "test_fixture",
+      "flowDigest": "ab3209c14b1beac6ca32aba05aa77259a7ed77d66268a2f2edac44c41c231bb2"
+    },
+    {
+      "ruleId": "rust/hard-coded-cryptographic-value",
+      "path": "src/smb/client.rs",
+      "partialFingerprints": {
+        "primaryLocationLineHash": "21bb3c22c0b273f0:1"
+      },
+      "scannedStartLine": 3465,
+      "classification": "false_positive",
+      "owningFunction": "the_credential_fingerprint_is_stable_and_scoped_to_the_server",
+      "reason": "Fixed synthetic inputs to credential_id test case normalization, user/password distinction and server-port scoping; no login occurs in this function. This specific finding is not reachable in a non-test build.",
+      "cfgTestEvidence": [
+        {
+          "path": "src/smb/client.rs",
+          "line": 2375,
+          "attribute": "#[cfg(test)]",
+          "scope": "mod tests"
+        },
+        {
+          "path": "src/smb/client.rs",
+          "line": 3440,
+          "scope": "tests::the_credential_fingerprint_is_stable_and_scoped_to_the_server"
+        }
+      ],
+      "sourceHashes": {
+        "src/smb/client.rs": "d4dae30f02a4cd3b8275f9a927d5bdf59b0e68b45816b75c4b6a5048ffbb7a40"
+      },
+      "scope": "test_fixture",
+      "flowDigest": "640a6d621b3bd2780d2847bddd40368a1cefe963e26990332195caea95d9430a"
+    },
+    {
+      "ruleId": "rust/hard-coded-cryptographic-value",
+      "path": "src/smb/client.rs",
+      "partialFingerprints": {
+        "primaryLocationLineHash": "ac93b6194f97b9fd:1"
+      },
+      "scannedStartLine": 3466,
+      "classification": "false_positive",
+      "owningFunction": "the_credential_fingerprint_is_stable_and_scoped_to_the_server",
+      "reason": "Fixed synthetic inputs to credential_id test case normalization, user/password distinction and server-port scoping; no login occurs in this function. This specific finding is not reachable in a non-test build.",
+      "cfgTestEvidence": [
+        {
+          "path": "src/smb/client.rs",
+          "line": 2375,
+          "attribute": "#[cfg(test)]",
+          "scope": "mod tests"
+        },
+        {
+          "path": "src/smb/client.rs",
+          "line": 3440,
+          "scope": "tests::the_credential_fingerprint_is_stable_and_scoped_to_the_server"
+        }
+      ],
+      "sourceHashes": {
+        "src/smb/client.rs": "d4dae30f02a4cd3b8275f9a927d5bdf59b0e68b45816b75c4b6a5048ffbb7a40"
+      },
+      "scope": "test_fixture",
+      "flowDigest": "4ebf101028a124212ec0f1679ba3fd25df9c0a9c24c2b7263d8c61599443e247"
+    },
+    {
+      "ruleId": "rust/hard-coded-cryptographic-value",
+      "path": "src/smb/ntlm.rs",
+      "partialFingerprints": {
+        "primaryLocationLineHash": "223524df5fba0de8:1"
+      },
+      "scannedStartLine": 352,
+      "classification": "false_positive",
+      "owningFunction": "the_ntlmv2_proof_and_session_key_match_the_ms_nlmp_worked_example",
+      "reason": "Public MS-NLMP section 4.2.4.2.2 worked-example inputs verify exact proof and session-key bytes; no runtime account or secret is provisioned. This specific finding is not reachable in a non-test build.",
+      "cfgTestEvidence": [
+        {
+          "path": "src/smb/ntlm.rs",
+          "line": 203,
+          "attribute": "#[cfg(test)]",
+          "scope": "mod tests"
+        },
+        {
+          "path": "src/smb/ntlm.rs",
+          "line": 339,
+          "scope": "tests::the_ntlmv2_proof_and_session_key_match_the_ms_nlmp_worked_example"
+        }
+      ],
+      "sourceHashes": {
+        "src/smb/ntlm.rs": "f94c9eee3d667062b11d34c61d650a147fe897c2b091f133b4262848bf19aa08"
+      },
+      "scope": "test_fixture",
+      "flowDigest": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    {
+      "ruleId": "rust/hard-coded-cryptographic-value",
+      "path": "src/smb/client.rs",
+      "partialFingerprints": {
+        "primaryLocationLineHash": "a55ecb5b41c9fc15:1"
+      },
+      "scannedStartLine": 3634,
+      "classification": "false_positive",
+      "owningFunction": "a_real_login_settles_as_what_its_answer_proves",
+      "reason": "Table-driven synthetic local scripted-peer login verifies Accepted/Rejected/Unverified/Account classification; wrong-password case must remain Unverified. This specific finding is not reachable in a non-test build.",
+      "cfgTestEvidence": [
+        {
+          "path": "src/smb/client.rs",
+          "line": 2375,
+          "attribute": "#[cfg(test)]",
+          "scope": "mod tests"
+        },
+        {
+          "path": "src/smb/client.rs",
+          "line": 3576,
+          "scope": "tests::a_real_login_settles_as_what_its_answer_proves"
+        }
+      ],
+      "sourceHashes": {
+        "src/smb/client.rs": "d4dae30f02a4cd3b8275f9a927d5bdf59b0e68b45816b75c4b6a5048ffbb7a40"
+      },
+      "scope": "test_fixture",
+      "flowDigest": "02a5132d5cab33e2e11d44e7ed1625bd901b9021192da2c15c4514495974743f"
+    },
+    {
+      "ruleId": "rust/hard-coded-cryptographic-value",
+      "path": "src/smb/client.rs",
+      "partialFingerprints": {
+        "primaryLocationLineHash": "e67181c18094455e:1"
+      },
+      "scannedStartLine": 3735,
+      "classification": "false_positive",
+      "owningFunction": "a_login_that_never_finishes_is_bounded_by_one_deadline",
+      "reason": "Synthetic local stalled-handshake fixture uses a fixed test password to exercise the absolute handshake timeout. This specific finding is not reachable in a non-test build.",
+      "cfgTestEvidence": [
+        {
+          "path": "src/smb/client.rs",
+          "line": 2375,
+          "attribute": "#[cfg(test)]",
+          "scope": "mod tests"
+        },
+        {
+          "path": "src/smb/client.rs",
+          "line": 3726,
+          "scope": "tests::a_login_that_never_finishes_is_bounded_by_one_deadline"
+        }
+      ],
+      "sourceHashes": {
+        "src/smb/client.rs": "d4dae30f02a4cd3b8275f9a927d5bdf59b0e68b45816b75c4b6a5048ffbb7a40"
+      },
+      "scope": "test_fixture",
+      "flowDigest": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    {
+      "ruleId": "rust/hard-coded-cryptographic-value",
+      "path": "src/smb/client.rs",
+      "partialFingerprints": {
+        "primaryLocationLineHash": "b5bc32559f2be8ef:1"
+      },
+      "scannedStartLine": 3802,
+      "classification": "false_positive",
+      "owningFunction": "the_fingerprint_varies_with_the_host_as_well_as_the_port",
+      "reason": "Fixed synthetic credential_id inputs test host/port distinction and case normalization without authenticating to any service. This specific finding is not reachable in a non-test build.",
+      "cfgTestEvidence": [
+        {
+          "path": "src/smb/client.rs",
+          "line": 2375,
+          "attribute": "#[cfg(test)]",
+          "scope": "mod tests"
+        },
+        {
+          "path": "src/smb/client.rs",
+          "line": 3800,
+          "scope": "tests::the_fingerprint_varies_with_the_host_as_well_as_the_port"
+        }
+      ],
+      "sourceHashes": {
+        "src/smb/client.rs": "d4dae30f02a4cd3b8275f9a927d5bdf59b0e68b45816b75c4b6a5048ffbb7a40"
+      },
+      "scope": "test_fixture",
+      "flowDigest": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    {
+      "ruleId": "rust/hard-coded-cryptographic-value",
+      "path": "src/smb/client.rs",
+      "partialFingerprints": {
+        "primaryLocationLineHash": "3affd34161a31251:1"
+      },
+      "scannedStartLine": 3803,
+      "classification": "false_positive",
+      "owningFunction": "the_fingerprint_varies_with_the_host_as_well_as_the_port",
+      "reason": "Fixed synthetic credential_id inputs test host/port distinction and case normalization without authenticating to any service. This specific finding is not reachable in a non-test build.",
+      "cfgTestEvidence": [
+        {
+          "path": "src/smb/client.rs",
+          "line": 2375,
+          "attribute": "#[cfg(test)]",
+          "scope": "mod tests"
+        },
+        {
+          "path": "src/smb/client.rs",
+          "line": 3800,
+          "scope": "tests::the_fingerprint_varies_with_the_host_as_well_as_the_port"
+        }
+      ],
+      "sourceHashes": {
+        "src/smb/client.rs": "d4dae30f02a4cd3b8275f9a927d5bdf59b0e68b45816b75c4b6a5048ffbb7a40"
+      },
+      "scope": "test_fixture",
+      "flowDigest": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    {
+      "ruleId": "rust/hard-coded-cryptographic-value",
+      "path": "src/smb/client.rs",
+      "partialFingerprints": {
+        "primaryLocationLineHash": "b3d7c86f1340f443:1"
+      },
+      "scannedStartLine": 3806,
+      "classification": "false_positive",
+      "owningFunction": "the_fingerprint_varies_with_the_host_as_well_as_the_port",
+      "reason": "Fixed synthetic credential_id inputs test host/port distinction and case normalization without authenticating to any service. This specific finding is not reachable in a non-test build.",
+      "cfgTestEvidence": [
+        {
+          "path": "src/smb/client.rs",
+          "line": 2375,
+          "attribute": "#[cfg(test)]",
+          "scope": "mod tests"
+        },
+        {
+          "path": "src/smb/client.rs",
+          "line": 3800,
+          "scope": "tests::the_fingerprint_varies_with_the_host_as_well_as_the_port"
+        }
+      ],
+      "sourceHashes": {
+        "src/smb/client.rs": "d4dae30f02a4cd3b8275f9a927d5bdf59b0e68b45816b75c4b6a5048ffbb7a40"
+      },
+      "scope": "test_fixture",
+      "flowDigest": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    {
+      "ruleId": "rust/hard-coded-cryptographic-value",
+      "path": "src/smb/client.rs",
+      "partialFingerprints": {
+        "primaryLocationLineHash": "532c25676f835c03:1"
+      },
+      "scannedStartLine": 3807,
+      "classification": "false_positive",
+      "owningFunction": "the_fingerprint_varies_with_the_host_as_well_as_the_port",
+      "reason": "Fixed synthetic credential_id inputs test host/port distinction and case normalization without authenticating to any service. This specific finding is not reachable in a non-test build.",
+      "cfgTestEvidence": [
+        {
+          "path": "src/smb/client.rs",
+          "line": 2375,
+          "attribute": "#[cfg(test)]",
+          "scope": "mod tests"
+        },
+        {
+          "path": "src/smb/client.rs",
+          "line": 3800,
+          "scope": "tests::the_fingerprint_varies_with_the_host_as_well_as_the_port"
+        }
+      ],
+      "sourceHashes": {
+        "src/smb/client.rs": "d4dae30f02a4cd3b8275f9a927d5bdf59b0e68b45816b75c4b6a5048ffbb7a40"
+      },
+      "scope": "test_fixture",
+      "flowDigest": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    {
+      "ruleId": "rust/hard-coded-cryptographic-value",
+      "path": "src/smb/client.rs",
+      "partialFingerprints": {
+        "primaryLocationLineHash": "317e4844fc60f7eb:1"
+      },
+      "scannedStartLine": 3811,
+      "classification": "false_positive",
+      "owningFunction": "the_fingerprint_varies_with_the_host_as_well_as_the_port",
+      "reason": "Fixed synthetic credential_id inputs test host/port distinction and case normalization without authenticating to any service. This specific finding is not reachable in a non-test build.",
+      "cfgTestEvidence": [
+        {
+          "path": "src/smb/client.rs",
+          "line": 2375,
+          "attribute": "#[cfg(test)]",
+          "scope": "mod tests"
+        },
+        {
+          "path": "src/smb/client.rs",
+          "line": 3800,
+          "scope": "tests::the_fingerprint_varies_with_the_host_as_well_as_the_port"
+        }
+      ],
+      "sourceHashes": {
+        "src/smb/client.rs": "d4dae30f02a4cd3b8275f9a927d5bdf59b0e68b45816b75c4b6a5048ffbb7a40"
+      },
+      "scope": "test_fixture",
+      "flowDigest": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    {
+      "ruleId": "rust/hard-coded-cryptographic-value",
+      "path": "src/smb/client.rs",
+      "partialFingerprints": {
+        "primaryLocationLineHash": "b15e45e27ce4bd54:1"
+      },
+      "scannedStartLine": 3812,
+      "classification": "false_positive",
+      "owningFunction": "the_fingerprint_varies_with_the_host_as_well_as_the_port",
+      "reason": "Fixed synthetic credential_id inputs test host/port distinction and case normalization without authenticating to any service. This specific finding is not reachable in a non-test build.",
+      "cfgTestEvidence": [
+        {
+          "path": "src/smb/client.rs",
+          "line": 2375,
+          "attribute": "#[cfg(test)]",
+          "scope": "mod tests"
+        },
+        {
+          "path": "src/smb/client.rs",
+          "line": 3800,
+          "scope": "tests::the_fingerprint_varies_with_the_host_as_well_as_the_port"
+        }
+      ],
+      "sourceHashes": {
+        "src/smb/client.rs": "d4dae30f02a4cd3b8275f9a927d5bdf59b0e68b45816b75c4b6a5048ffbb7a40"
+      },
+      "scope": "test_fixture",
+      "flowDigest": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    {
+      "ruleId": "rust/hard-coded-cryptographic-value",
+      "path": "src/smb/client.rs",
+      "partialFingerprints": {
+        "primaryLocationLineHash": "d58024be08c32955:1"
+      },
+      "scannedStartLine": 3856,
+      "classification": "false_positive",
+      "owningFunction": "one_wrong_password_under_two_spellings_is_offered_at_most_the_budget",
+      "reason": "The intentionally wrong synthetic password is offered to local Reject peers under two username spellings to test shared rejection accounting. This specific finding is not reachable in a non-test build.",
+      "cfgTestEvidence": [
+        {
+          "path": "src/smb/client.rs",
+          "line": 2375,
+          "attribute": "#[cfg(test)]",
+          "scope": "mod tests"
+        },
+        {
+          "path": "src/smb/client.rs",
+          "line": 3849,
+          "scope": "tests::one_wrong_password_under_two_spellings_is_offered_at_most_the_budget"
+        }
+      ],
+      "sourceHashes": {
+        "src/smb/client.rs": "d4dae30f02a4cd3b8275f9a927d5bdf59b0e68b45816b75c4b6a5048ffbb7a40"
+      },
+      "scope": "test_fixture",
+      "flowDigest": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    {
+      "ruleId": "rust/hard-coded-cryptographic-value",
+      "path": "src/smb/client.rs",
+      "partialFingerprints": {
+        "primaryLocationLineHash": "52ded6b410470ce9:1"
+      },
+      "scannedStartLine": 3862,
+      "classification": "false_positive",
+      "owningFunction": "one_wrong_password_under_two_spellings_is_offered_at_most_the_budget",
+      "reason": "The intentionally wrong synthetic password is offered to local Reject peers under two username spellings to test shared rejection accounting. This specific finding is not reachable in a non-test build.",
+      "cfgTestEvidence": [
+        {
+          "path": "src/smb/client.rs",
+          "line": 2375,
+          "attribute": "#[cfg(test)]",
+          "scope": "mod tests"
+        },
+        {
+          "path": "src/smb/client.rs",
+          "line": 3849,
+          "scope": "tests::one_wrong_password_under_two_spellings_is_offered_at_most_the_budget"
+        }
+      ],
+      "sourceHashes": {
+        "src/smb/client.rs": "d4dae30f02a4cd3b8275f9a927d5bdf59b0e68b45816b75c4b6a5048ffbb7a40"
+      },
+      "scope": "test_fixture",
+      "flowDigest": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    {
+      "ruleId": "rust/hard-coded-cryptographic-value",
+      "path": "src/smb/client.rs",
+      "partialFingerprints": {
+        "primaryLocationLineHash": "fbc3c9ee18fcd302:1"
+      },
+      "scannedStartLine": 3884,
+      "classification": "false_positive",
+      "owningFunction": "a_login_that_fails_before_the_credential_goes_out_spends_nothing",
+      "reason": "Synthetic password is used only for closed local port and scripted hang-up-before-challenge peers; counters prove authentication was not offered. This specific finding is not reachable in a non-test build.",
+      "cfgTestEvidence": [
+        {
+          "path": "src/smb/client.rs",
+          "line": 2375,
+          "attribute": "#[cfg(test)]",
+          "scope": "mod tests"
+        },
+        {
+          "path": "src/smb/client.rs",
+          "line": 3880,
+          "scope": "tests::a_login_that_fails_before_the_credential_goes_out_spends_nothing"
+        }
+      ],
+      "sourceHashes": {
+        "src/smb/client.rs": "d4dae30f02a4cd3b8275f9a927d5bdf59b0e68b45816b75c4b6a5048ffbb7a40"
+      },
+      "scope": "test_fixture",
+      "flowDigest": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    {
+      "ruleId": "rust/hard-coded-cryptographic-value",
+      "path": "src/smb/client.rs",
+      "partialFingerprints": {
+        "primaryLocationLineHash": "af103cc8e9b4fed:1"
+      },
+      "scannedStartLine": 3907,
+      "classification": "false_positive",
+      "owningFunction": "a_login_that_fails_before_the_credential_goes_out_spends_nothing",
+      "reason": "Synthetic password is used only for closed local port and scripted hang-up-before-challenge peers; counters prove authentication was not offered. This specific finding is not reachable in a non-test build.",
+      "cfgTestEvidence": [
+        {
+          "path": "src/smb/client.rs",
+          "line": 2375,
+          "attribute": "#[cfg(test)]",
+          "scope": "mod tests"
+        },
+        {
+          "path": "src/smb/client.rs",
+          "line": 3880,
+          "scope": "tests::a_login_that_fails_before_the_credential_goes_out_spends_nothing"
+        }
+      ],
+      "sourceHashes": {
+        "src/smb/client.rs": "d4dae30f02a4cd3b8275f9a927d5bdf59b0e68b45816b75c4b6a5048ffbb7a40"
+      },
+      "scope": "test_fixture",
+      "flowDigest": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    {
+      "ruleId": "rust/hard-coded-cryptographic-value",
+      "path": "src/smb/client.rs",
+      "partialFingerprints": {
+        "primaryLocationLineHash": "f73831fa8da137df:1"
+      },
+      "scannedStartLine": 3930,
+      "classification": "false_positive",
+      "owningFunction": "a_guest_session_spends_the_budget_as_a_rejection",
+      "reason": "Synthetic local Guest peer login tests that guest fallback consumes the credential rejection budget. This specific finding is not reachable in a non-test build.",
+      "cfgTestEvidence": [
+        {
+          "path": "src/smb/client.rs",
+          "line": 2375,
+          "attribute": "#[cfg(test)]",
+          "scope": "mod tests"
+        },
+        {
+          "path": "src/smb/client.rs",
+          "line": 3927,
+          "scope": "tests::a_guest_session_spends_the_budget_as_a_rejection"
+        }
+      ],
+      "sourceHashes": {
+        "src/smb/client.rs": "d4dae30f02a4cd3b8275f9a927d5bdf59b0e68b45816b75c4b6a5048ffbb7a40"
+      },
+      "scope": "test_fixture",
+      "flowDigest": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    {
+      "ruleId": "rust/hard-coded-cryptographic-value",
+      "path": "src/smb/scripted.rs",
+      "partialFingerprints": {
+        "primaryLocationLineHash": "9968f8d61d483723:1"
+      },
+      "scannedStartLine": 31,
+      "classification": "false_positive",
+      "owningFunction": "scripted::PASSWORD",
+      "reason": "Shared synthetic credential constant for the in-process scripted SMB test peer; its key derivation checks test NTLM proofs/signatures. The entire module is excluded from normal builds by its cfg(test) declaration. This specific finding is not reachable in a non-test build. CodeQL reports either of two representative paths for this finding on an unchanged tree: through src/smb/conn.rs test logins, or through the src/smb/client.rs test pool (pool_at(.., as_user(PASSWORD))). Both were reviewed; every sink on both is inside a #[cfg(test)] module. Later runs reported a third and a fourth representative path (the fourth through the src/smb/conn.rs test module and the scripted peer's own key derivation); their sinks are the same #[cfg(test)] modules and both were reviewed. The fourth path is also reported with its two flows in the opposite order, which digests differently; it is the same reviewed path.",
+      "cfgTestEvidence": [
+        {
+          "path": "src/smb/mod.rs",
+          "line": 27,
+          "attribute": "#[cfg(test)]",
+          "scope": "pub(crate) mod scripted"
+        },
+        {
+          "path": "src/smb/scripted.rs",
+          "line": 196,
+          "scope": "spawn(script): local test TCP listener and paired proof/signature checks"
+        },
+        {
+          "path": "src/smb/conn.rs",
+          "scope": "Reviewed reported source-to-sink implementation; see individual reason"
+        },
+        {
+          "path": "src/smb/client.rs",
+          "line": 2375,
+          "attribute": "#[cfg(test)]",
+          "scope": "mod tests: alternate reported sinks at 2937, 2981 and 3016 (pool_at(.., as_user(PASSWORD)))"
+        }
+      ],
+      "sourceHashes": {
+        "src/smb/conn.rs": "b77ad5d5a7d55a2d8d41fa10646e86eca1d1ed06c2b718c0efa240f32e965634",
+        "src/smb/mod.rs": "138e8db6eea4fe5c227c91af3b3a27e07a51d37df29093cdf7d2edc4569be568",
+        "src/smb/scripted.rs": "b72b5adb4500a40a5d1ed65d502bb77d0ca5a14cf3676a82d5230a4553cbed21",
+        "src/smb/client.rs": "d4dae30f02a4cd3b8275f9a927d5bdf59b0e68b45816b75c4b6a5048ffbb7a40"
+      },
+      "scope": "test_fixture",
+      "flowDigests": [
+        "3b5883d342c0793076128a11c7b9c98de972b870cf36af42d95546579db46807",
+        "ad30301739bd7620cfa2d18bbf95816f8f7532c39e72ec95d4e5c449e450a982",
+        "dcb70204038b02be5782c342f9d1f1d9c53d6dbce6bbfae308ffbd53b42ce457",
+        "682bd197b523558e47ff9dfe144c34693fa6bae47d96bd34df02cb362b721f28",
+        "4d32f32584e96446031a20479450e72cd7d66c67c8bc8204acdcdf8709c3b259"
+      ]
+    },
+    {
+      "ruleId": "rust/cleartext-logging",
+      "path": "src/lib.rs",
+      "partialFingerprints": {
+        "primaryLocationLineHash": "7e8764116ae20032:1"
+      },
+      "classification": "false_positive",
+      "owningFunction": "an_ipv6_endpoint_survives_parse_and_display_into_the_transport_parser",
+      "scannedStartLine": 1292,
+      "scope": "test_fixture",
+      "cfgTestEvidence": [
+        {
+          "path": "src/lib.rs",
+          "startLine": 1264,
+          "scope": "#[cfg(test)] module containing the identified assertion"
+        }
+      ],
+      "reason": "The assertion formats fixed IPv6/WebDAV fixture endpoints. CodeQL follows no_password_in, a validator that rejects passwords before constructing the endpoint and never returns the password. No credential is logged.",
+      "sourceHashes": {
+        "src/lib.rs": "2ed8d5ed7ca1ff7b89c3ebd5dac6d52701b1501233087d73ce05ab45010033bc"
+      },
+      "flowDigests": [
+        "421ea758a1eea93b2c05b46bd6da6ab515d8aa93b777f0ff7d9b0a87897bc4a2",
+        "23af169f09545e117f5727fa147268b38142d89c864335b0b7019afab55673b5"
+      ]
+    },
+    {
+      "ruleId": "rust/cleartext-logging",
+      "path": "src/smb/client.rs",
+      "partialFingerprints": {
+        "primaryLocationLineHash": "65c3b4662475447d:1"
+      },
+      "classification": "false_positive",
+      "owningFunction": "an_account_verdict_in_the_sum_is_named_not_called_a_rejection",
+      "scannedStartLine": 3423,
+      "scope": "test_fixture",
+      "cfgTestEvidence": [
+        {
+          "path": "src/smb/client.rs",
+          "startLine": 2375,
+          "scope": "#[cfg(test)] module containing the identified assertion"
+        }
+      ],
+      "reason": "The assertion formats a budget refusal constructed from a fixed fixture host and numeric account-lock status. account_refusal describes the lack of a password/key but never formats credential material; the credential IDs in this test are synthetic integers.",
+      "sourceHashes": {
+        "src/smb/client.rs": "d4dae30f02a4cd3b8275f9a927d5bdf59b0e68b45816b75c4b6a5048ffbb7a40"
+      },
+      "flowDigest": "5d7d5ccec464f636e5d34b40429dd605f7cab3cda36e9ee8881aa9eea5a75b11"
+    },
+    {
+      "ruleId": "rust/cleartext-logging",
+      "path": "src/smb/client.rs",
+      "partialFingerprints": {
+        "primaryLocationLineHash": "d8abef7977ab8a47:1"
+      },
+      "classification": "false_positive",
+      "owningFunction": "an_account_verdict_in_the_sum_is_named_not_called_a_rejection",
+      "scannedStartLine": 3428,
+      "scope": "test_fixture",
+      "cfgTestEvidence": [
+        {
+          "path": "src/smb/client.rs",
+          "startLine": 2375,
+          "scope": "#[cfg(test)] module containing the identified assertion"
+        }
+      ],
+      "reason": "The assertion formats a budget refusal constructed from a fixed fixture host and numeric account-lock status. account_refusal describes the lack of a password/key but never formats credential material; the credential IDs in this test are synthetic integers.",
+      "sourceHashes": {
+        "src/smb/client.rs": "d4dae30f02a4cd3b8275f9a927d5bdf59b0e68b45816b75c4b6a5048ffbb7a40"
+      },
+      "flowDigest": "32db3224f6350c950c5173fd1107d22ea7a2c59801210c83befe98d752b00939"
+    },
+    {
+      "ruleId": "rust/cleartext-logging",
+      "path": "src/smb/client.rs",
+      "partialFingerprints": {
+        "primaryLocationLineHash": "7297e7bf4d58779d:1"
+      },
+      "classification": "false_positive",
+      "owningFunction": "an_account_verdict_in_the_sum_is_named_not_called_a_rejection",
+      "scannedStartLine": 3432,
+      "scope": "test_fixture",
+      "cfgTestEvidence": [
+        {
+          "path": "src/smb/client.rs",
+          "startLine": 2375,
+          "scope": "#[cfg(test)] module containing the identified assertion"
+        }
+      ],
+      "reason": "The assertion formats a budget refusal constructed from a fixed fixture host and numeric account-lock status. account_refusal describes the lack of a password/key but never formats credential material; the credential IDs in this test are synthetic integers.",
+      "sourceHashes": {
+        "src/smb/client.rs": "d4dae30f02a4cd3b8275f9a927d5bdf59b0e68b45816b75c4b6a5048ffbb7a40"
+      },
+      "flowDigest": "7c94ad229c3bed1665aed2f84344192878ead09cc988f7359a7b39f414cc0e48"
+    },
+    {
+      "ruleId": "rust/cleartext-logging",
+      "path": "src/transfer.rs",
+      "partialFingerprints": {
+        "primaryLocationLineHash": "55079e2f00b9a40c:1"
+      },
+      "classification": "false_positive",
+      "owningFunction": "the_long_form_stars_the_mtime_only_when_the_comparison_said_it_differs",
+      "scannedStartLine": 3810,
+      "scope": "test_fixture",
+      "cfgTestEvidence": [
+        {
+          "path": "src/transfer.rs",
+          "startLine": 3017,
+          "scope": "#[cfg(test)] module containing the identified assertion"
+        },
+        {
+          "path": "src/names.rs",
+          "scope": "Reviewed reported source-to-sink implementation; see individual reason"
+        },
+        {
+          "path": "src/ports.rs",
+          "scope": "Reviewed reported source-to-sink implementation; see individual reason"
+        },
+        {
+          "path": "src/scan.rs",
+          "scope": "Reviewed reported source-to-sink implementation; see individual reason"
+        }
+      ],
+      "reason": "The assertion formats fixed fixture metadata (size and mtime). The reported sources are usernames and numeric uid values in long listings; names::parse retains only passwd field 0 and field 2, never password field 1.",
+      "sourceHashes": {
+        "src/names.rs": "bd16b39ddf327364db1d169d453483dc444b12080fa3bf9a52b72f8ca5deb0fb",
+        "src/ports.rs": "a79f9ffe519e755acb518bacb8dfe982631d77c73c50c7fa5bbf7290765ba342",
+        "src/scan.rs": "f1fa812c5096bef09173f93c565e5f95f31f3c9fb101d2faf0f9b24d84b14198",
+        "src/transfer.rs": "713b43fab34a4c098873961376da135e182ba7b20b5653c022c4b5d12bb661bb"
+      },
+      "flowDigests": [
+        "28147b0053712ed13d5d221e149491818ae2f193d70e980e87b46054550491ce",
+        "98e63885aa625781cd72e32d9196974139ceb12e4f65759c40d651f8157d3230"
+      ]
+    },
+    {
+      "ruleId": "rust/cleartext-logging",
+      "path": "src/transfer.rs",
+      "partialFingerprints": {
+        "primaryLocationLineHash": "8559b419de9d62c:1"
+      },
+      "classification": "false_positive",
+      "owningFunction": "the_long_form_stars_the_mtime_only_when_the_comparison_said_it_differs",
+      "scannedStartLine": 3798,
+      "scope": "test_fixture",
+      "cfgTestEvidence": [
+        {
+          "path": "src/transfer.rs",
+          "startLine": 3017,
+          "scope": "#[cfg(test)] module containing the identified assertion"
+        },
+        {
+          "path": "src/names.rs",
+          "scope": "Reviewed reported source-to-sink implementation; see individual reason"
+        },
+        {
+          "path": "src/ports.rs",
+          "scope": "Reviewed reported source-to-sink implementation; see individual reason"
+        },
+        {
+          "path": "src/scan.rs",
+          "scope": "Reviewed reported source-to-sink implementation; see individual reason"
+        }
+      ],
+      "reason": "The assertion formats fixed fixture metadata (size and mtime). The reported sources are usernames and numeric uid values in long listings; names::parse retains only passwd field 0 and field 2, never password field 1.",
+      "sourceHashes": {
+        "src/names.rs": "bd16b39ddf327364db1d169d453483dc444b12080fa3bf9a52b72f8ca5deb0fb",
+        "src/ports.rs": "a79f9ffe519e755acb518bacb8dfe982631d77c73c50c7fa5bbf7290765ba342",
+        "src/scan.rs": "f1fa812c5096bef09173f93c565e5f95f31f3c9fb101d2faf0f9b24d84b14198",
+        "src/transfer.rs": "713b43fab34a4c098873961376da135e182ba7b20b5653c022c4b5d12bb661bb"
+      },
+      "flowDigests": [
+        "58b20c3abc38897e043b415f4e8e91cf2d8385fdce178d9ee1e0706f59891e22",
+        "1a14d02932d110d77eef4a8bf8844b76a098536a5ff02a646ef8959f399d1304"
+      ]
+    },
+    {
+      "ruleId": "rust/cleartext-logging",
+      "path": "src/transfer.rs",
+      "partialFingerprints": {
+        "primaryLocationLineHash": "a57b50be10dbfb4f:1"
+      },
+      "classification": "false_positive",
+      "owningFunction": "the_long_form_stars_the_mtime_only_when_the_comparison_said_it_differs",
+      "scannedStartLine": 3803,
+      "scope": "test_fixture",
+      "cfgTestEvidence": [
+        {
+          "path": "src/transfer.rs",
+          "startLine": 3017,
+          "scope": "#[cfg(test)] module containing the identified assertion"
+        },
+        {
+          "path": "src/names.rs",
+          "scope": "Reviewed reported source-to-sink implementation; see individual reason"
+        },
+        {
+          "path": "src/ports.rs",
+          "scope": "Reviewed reported source-to-sink implementation; see individual reason"
+        },
+        {
+          "path": "src/scan.rs",
+          "scope": "Reviewed reported source-to-sink implementation; see individual reason"
+        }
+      ],
+      "reason": "The assertion formats fixed fixture metadata (size and mtime). The reported sources are usernames and numeric uid values in long listings; names::parse retains only passwd field 0 and field 2, never password field 1.",
+      "sourceHashes": {
+        "src/names.rs": "bd16b39ddf327364db1d169d453483dc444b12080fa3bf9a52b72f8ca5deb0fb",
+        "src/ports.rs": "a79f9ffe519e755acb518bacb8dfe982631d77c73c50c7fa5bbf7290765ba342",
+        "src/scan.rs": "f1fa812c5096bef09173f93c565e5f95f31f3c9fb101d2faf0f9b24d84b14198",
+        "src/transfer.rs": "713b43fab34a4c098873961376da135e182ba7b20b5653c022c4b5d12bb661bb"
+      },
+      "flowDigests": [
+        "0675bce95c3f9c4159820d7a93e1f7aae2079f4c0d3982658e333491642e1110",
+        "f634e59631c446e48bb94d504fb3ba96fb90a27feffb6f4e310827fd79750827"
+      ]
+    },
+    {
+      "ruleId": "rust/cleartext-logging",
+      "path": "src/transfer.rs",
+      "partialFingerprints": {
+        "primaryLocationLineHash": "7362199d28ff7d69:1"
+      },
+      "classification": "false_positive",
+      "owningFunction": "the_long_form_stars_the_mtime_only_when_the_comparison_said_it_differs",
+      "scannedStartLine": 3817,
+      "scope": "test_fixture",
+      "cfgTestEvidence": [
+        {
+          "path": "src/transfer.rs",
+          "startLine": 3017,
+          "scope": "#[cfg(test)] module containing the identified assertion"
+        },
+        {
+          "path": "src/names.rs",
+          "scope": "Reviewed reported source-to-sink implementation; see individual reason"
+        },
+        {
+          "path": "src/ports.rs",
+          "scope": "Reviewed reported source-to-sink implementation; see individual reason"
+        },
+        {
+          "path": "src/scan.rs",
+          "scope": "Reviewed reported source-to-sink implementation; see individual reason"
+        }
+      ],
+      "reason": "The assertion formats fixed fixture metadata (size and mtime). The reported sources are usernames and numeric uid values in long listings; names::parse retains only passwd field 0 and field 2, never password field 1.",
+      "sourceHashes": {
+        "src/names.rs": "bd16b39ddf327364db1d169d453483dc444b12080fa3bf9a52b72f8ca5deb0fb",
+        "src/ports.rs": "a79f9ffe519e755acb518bacb8dfe982631d77c73c50c7fa5bbf7290765ba342",
+        "src/scan.rs": "f1fa812c5096bef09173f93c565e5f95f31f3c9fb101d2faf0f9b24d84b14198",
+        "src/transfer.rs": "713b43fab34a4c098873961376da135e182ba7b20b5653c022c4b5d12bb661bb"
+      },
+      "flowDigests": [
+        "d5b136e83980cbab3100d6beba42ef9b68a82ed02de7dceb41474a633ed08173",
+        "f08e722b7d63c5dc8634b454664ef6630f2b21ea622b2c1c78176c2dec071bd3"
+      ]
+    },
+    {
+      "ruleId": "rust/cleartext-logging",
+      "path": "src/transfer.rs",
+      "partialFingerprints": {
+        "primaryLocationLineHash": "b3520ba18214019:1"
+      },
+      "classification": "false_positive",
+      "owningFunction": "the_long_form_stars_the_mtime_only_when_the_comparison_said_it_differs",
+      "scannedStartLine": 3822,
+      "scope": "test_fixture",
+      "cfgTestEvidence": [
+        {
+          "path": "src/transfer.rs",
+          "startLine": 3017,
+          "scope": "#[cfg(test)] module containing the identified assertion"
+        },
+        {
+          "path": "src/names.rs",
+          "scope": "Reviewed reported source-to-sink implementation; see individual reason"
+        },
+        {
+          "path": "src/ports.rs",
+          "scope": "Reviewed reported source-to-sink implementation; see individual reason"
+        },
+        {
+          "path": "src/scan.rs",
+          "scope": "Reviewed reported source-to-sink implementation; see individual reason"
+        }
+      ],
+      "reason": "The assertion formats fixed fixture metadata (size and mtime). The reported sources are usernames and numeric uid values in long listings; names::parse retains only passwd field 0 and field 2, never password field 1.",
+      "sourceHashes": {
+        "src/names.rs": "bd16b39ddf327364db1d169d453483dc444b12080fa3bf9a52b72f8ca5deb0fb",
+        "src/ports.rs": "a79f9ffe519e755acb518bacb8dfe982631d77c73c50c7fa5bbf7290765ba342",
+        "src/scan.rs": "f1fa812c5096bef09173f93c565e5f95f31f3c9fb101d2faf0f9b24d84b14198",
+        "src/transfer.rs": "713b43fab34a4c098873961376da135e182ba7b20b5653c022c4b5d12bb661bb"
+      },
+      "flowDigests": [
+        "57b3c4d076cb3235367ab88b2680ad7bf8b89c484d448cf3aa2f6ddf71d7b15a",
+        "afa164fc190d933d1bfded70e5ecac0151b803f4a66c6fc159345e70d382f31a"
+      ]
+    },
+    {
+      "ruleId": "rust/cleartext-logging",
+      "path": "src/main.rs",
+      "partialFingerprints": {
+        "primaryLocationLineHash": "79b4835ce4d8c857:1"
+      },
+      "classification": "false_positive",
+      "owningFunction": "run_scanbatch",
+      "scannedStartLine": 2989,
+      "scope": "non_secret_report_data",
+      "nonSecretEvidence": [
+        {
+          "path": "src/cluster.rs",
+          "scope": "Reviewed reported source-to-sink implementation; see individual reason"
+        },
+        {
+          "path": "src/main.rs",
+          "scope": "Reviewed reported source-to-sink implementation; see individual reason"
+        }
+      ],
+      "reason": "The cluster worker emits an item record. The reported source item_line field i.uid is a numeric file-owner identifier, alongside file metadata and optional file SHA-256, not a password or authentication secret.",
+      "sourceHashes": {
+        "src/cluster.rs": "9ea6f0f76fd2f38379604f5466d363fccc7252013f2d04e75236fd96ba22c87b",
+        "src/main.rs": "d81c22542e62d5bf78c28479bf44ee90638f152f8e465cf458cd63504875e21b"
+      },
+      "flowDigests": [
+        "eac36ca23b5a8fe03e4f67fdf56fce30fd9f7431357231df45b14a918a54da84",
+        "521602b75100a0b34748037403b82f64dc258d7e6d10faeb3948cfcf859d220c"
+      ]
+    },
+    {
+      "ruleId": "rust/cleartext-logging",
+      "path": "src/main.rs",
+      "partialFingerprints": {
+        "primaryLocationLineHash": "20d7d5767a3f6482:1"
+      },
+      "classification": "false_positive",
+      "owningFunction": "run_copy",
+      "scannedStartLine": 1855,
+      "scope": "non_secret_report_data",
+      "nonSecretEvidence": [
+        {
+          "path": "src/lib.rs",
+          "scope": "Reviewed reported source-to-sink implementation; see individual reason"
+        },
+        {
+          "path": "src/main.rs",
+          "scope": "Reviewed reported source-to-sink implementation; see individual reason"
+        }
+      ],
+      "reason": "The command reports an endpoint after Endpoint::parse succeeds. The reported source no_password_in is a rejection-only validator: authority passwords return a fixed explanatory error before endpoint construction. Its message mentions password/key but carries no password value; Endpoint::display formats endpoint address/path, not authentication material.",
+      "sourceHashes": {
+        "src/lib.rs": "2ed8d5ed7ca1ff7b89c3ebd5dac6d52701b1501233087d73ce05ab45010033bc",
+        "src/main.rs": "d81c22542e62d5bf78c28479bf44ee90638f152f8e465cf458cd63504875e21b"
+      },
+      "flowDigests": [
+        "7c4433e7cc88026a5d007ea4fd3813e509956aafc5300e2c18fd0cea0fa26ef9",
+        "b02e49e8a392bfdc6c17770fc61b53ae069dd0e1c503dda2be69f0e42d6094e8"
+      ]
+    },
+    {
+      "ruleId": "rust/cleartext-logging",
+      "path": "src/main.rs",
+      "partialFingerprints": {
+        "primaryLocationLineHash": "91b8baf516b46daf:1"
+      },
+      "classification": "false_positive",
+      "owningFunction": "run_isync_estimate",
+      "scannedStartLine": 1966,
+      "scope": "non_secret_report_data",
+      "nonSecretEvidence": [
+        {
+          "path": "src/main.rs",
+          "scope": "Reviewed reported source-to-sink implementation; see individual reason"
+        }
+      ],
+      "reason": "The estimate reports numeric duration and parallelism. The reported source is a numeric uid filter parsed from a user name, then stored as Option<u32>; neither passwords nor authentication keys enter this timing calculation.",
+      "sourceHashes": {
+        "src/main.rs": "d81c22542e62d5bf78c28479bf44ee90638f152f8e465cf458cd63504875e21b"
+      },
+      "flowDigests": [
+        "0c9f3543a58c0f79a4d2d01c96c2b976930279b96fa4b26de072db622524154b",
+        "def248929c9a1a173ea5e7d41cf43b88c18004b9d39942cc67d2b83a362b77da"
+      ]
+    },
+    {
+      "ruleId": "rust/cleartext-logging",
+      "path": "src/main.rs",
+      "partialFingerprints": {
+        "primaryLocationLineHash": "3307464df366bc58:1"
+      },
+      "classification": "false_positive",
+      "owningFunction": "run_scan",
+      "scannedStartLine": 2348,
+      "scope": "non_secret_report_data",
+      "nonSecretEvidence": [
+        {
+          "path": "src/main.rs",
+          "scope": "Reviewed reported source-to-sink implementation; see individual reason"
+        },
+        {
+          "path": "src/names.rs",
+          "scope": "Reviewed reported source-to-sink implementation; see individual reason"
+        },
+        {
+          "path": "src/ports.rs",
+          "scope": "Reviewed reported source-to-sink implementation; see individual reason"
+        },
+        {
+          "path": "src/scan.rs",
+          "scope": "Reviewed reported source-to-sink implementation; see individual reason"
+        }
+      ],
+      "reason": "The requested CSV/long listing reports file metadata and owner names. names::parse stores only username field 0 and numeric ID field 2 from passwd/group input; it discards password field 1. NumericNames also only converts a u32 ID to decimal text. No password field or credential reaches this output.",
+      "sourceHashes": {
+        "src/main.rs": "d81c22542e62d5bf78c28479bf44ee90638f152f8e465cf458cd63504875e21b",
+        "src/names.rs": "bd16b39ddf327364db1d169d453483dc444b12080fa3bf9a52b72f8ca5deb0fb",
+        "src/ports.rs": "a79f9ffe519e755acb518bacb8dfe982631d77c73c50c7fa5bbf7290765ba342",
+        "src/scan.rs": "f1fa812c5096bef09173f93c565e5f95f31f3c9fb101d2faf0f9b24d84b14198"
+      },
+      "flowDigests": [
+        "09aebc8c4cec5f1fcc0680424d24455584e3ad1a7474fb24fa42c1e505a37e8f",
+        "5afaaac2e11c3dd4edf2432147333ae23cf8d257a3d53e1551ddc05b1a3b2dae"
+      ]
+    },
+    {
+      "ruleId": "rust/cleartext-logging",
+      "path": "src/main.rs",
+      "partialFingerprints": {
+        "primaryLocationLineHash": "291d72bb132a11e9:1"
+      },
+      "classification": "false_positive",
+      "owningFunction": "run_scan",
+      "scannedStartLine": 2346,
+      "scope": "non_secret_report_data",
+      "nonSecretEvidence": [
+        {
+          "path": "src/main.rs",
+          "scope": "Reviewed reported source-to-sink implementation; see individual reason"
+        },
+        {
+          "path": "src/names.rs",
+          "scope": "Reviewed reported source-to-sink implementation; see individual reason"
+        },
+        {
+          "path": "src/ports.rs",
+          "scope": "Reviewed reported source-to-sink implementation; see individual reason"
+        },
+        {
+          "path": "src/scan.rs",
+          "scope": "Reviewed reported source-to-sink implementation; see individual reason"
+        }
+      ],
+      "reason": "The requested CSV/long listing reports file metadata and owner names. names::parse stores only username field 0 and numeric ID field 2 from passwd/group input; it discards password field 1. NumericNames also only converts a u32 ID to decimal text. No password field or credential reaches this output.",
+      "sourceHashes": {
+        "src/main.rs": "d81c22542e62d5bf78c28479bf44ee90638f152f8e465cf458cd63504875e21b",
+        "src/names.rs": "bd16b39ddf327364db1d169d453483dc444b12080fa3bf9a52b72f8ca5deb0fb",
+        "src/ports.rs": "a79f9ffe519e755acb518bacb8dfe982631d77c73c50c7fa5bbf7290765ba342",
+        "src/scan.rs": "f1fa812c5096bef09173f93c565e5f95f31f3c9fb101d2faf0f9b24d84b14198"
+      },
+      "flowDigests": [
+        "89f0f0f864b2be8dd296d61367ca560115b931f9f2f36bba815e9f66178c7457",
+        "2c656bc8afc522f973aad9eb0fab8a3010058b9ba0beea2aa78b5d21419ead1a"
+      ]
+    },
+    {
+      "ruleId": "rust/cleartext-logging",
+      "path": "src/main.rs",
+      "partialFingerprints": {
+        "primaryLocationLineHash": "ab260c8fb4f833e1:1"
+      },
+      "classification": "false_positive",
+      "owningFunction": "run_diag",
+      "scannedStartLine": 3067,
+      "scope": "non_secret_report_data",
+      "nonSecretEvidence": [
+        {
+          "path": "src/lib.rs",
+          "scope": "Reviewed reported source-to-sink implementation; see individual reason"
+        },
+        {
+          "path": "src/main.rs",
+          "scope": "Reviewed reported source-to-sink implementation; see individual reason"
+        }
+      ],
+      "reason": "The command reports an endpoint after Endpoint::parse succeeds. The reported source no_password_in is a rejection-only validator: authority passwords return a fixed explanatory error before endpoint construction. Its message mentions password/key but carries no password value; Endpoint::display formats endpoint address/path, not authentication material.",
+      "sourceHashes": {
+        "src/lib.rs": "2ed8d5ed7ca1ff7b89c3ebd5dac6d52701b1501233087d73ce05ab45010033bc",
+        "src/main.rs": "d81c22542e62d5bf78c28479bf44ee90638f152f8e465cf458cd63504875e21b"
+      },
+      "flowDigests": [
+        "a7090ba39093c008c21815c09d8f282685acaa21da13cef804d98a893ca0f4ff",
+        "4159291e684ce37c84cda533b683060d0f8daa6da2597e54f587d12e1e403054"
+      ]
+    },
+    {
+      "ruleId": "rust/cleartext-logging",
+      "path": "src/main.rs",
+      "partialFingerprints": {
+        "primaryLocationLineHash": "b9d7bad9c15350c6:1"
+      },
+      "classification": "false_positive",
+      "owningFunction": "run_diag",
+      "scannedStartLine": 3153,
+      "scope": "non_secret_report_data",
+      "nonSecretEvidence": [
+        {
+          "path": "src/lib.rs",
+          "scope": "Reviewed reported source-to-sink implementation; see individual reason"
+        },
+        {
+          "path": "src/main.rs",
+          "scope": "Reviewed reported source-to-sink implementation; see individual reason"
+        }
+      ],
+      "reason": "The command reports an endpoint after Endpoint::parse succeeds. The reported source no_password_in is a rejection-only validator: authority passwords return a fixed explanatory error before endpoint construction. Its message mentions password/key but carries no password value; Endpoint::display formats endpoint address/path, not authentication material.",
+      "sourceHashes": {
+        "src/lib.rs": "2ed8d5ed7ca1ff7b89c3ebd5dac6d52701b1501233087d73ce05ab45010033bc",
+        "src/main.rs": "d81c22542e62d5bf78c28479bf44ee90638f152f8e465cf458cd63504875e21b"
+      },
+      "flowDigests": [
+        "f213f3f05f12ddb37f19430387f202b1bc02d3302ddc50cf6abf5d65b78ad86b",
+        "688784d9898c467d93bb308f9aa0e51d3703026b0d1162c27bf9bd204a69f83f"
+      ]
+    },
+    {
+      "ruleId": "rust/cleartext-logging",
+      "path": "src/main.rs",
+      "partialFingerprints": {
+        "primaryLocationLineHash": "a988a0d608f81ab0:1"
+      },
+      "classification": "false_positive",
+      "owningFunction": "run_diag",
+      "scannedStartLine": 3322,
+      "scope": "non_secret_report_data",
+      "nonSecretEvidence": [
+        {
+          "path": "src/main.rs",
+          "scope": "Reviewed reported source-to-sink implementation; see individual reason"
+        },
+        {
+          "path": "src/names.rs",
+          "scope": "Reviewed reported source-to-sink implementation; see individual reason"
+        },
+        {
+          "path": "src/ports.rs",
+          "scope": "Reviewed reported source-to-sink implementation; see individual reason"
+        },
+        {
+          "path": "src/scan.rs",
+          "scope": "Reviewed reported source-to-sink implementation; see individual reason"
+        }
+      ],
+      "reason": "The requested CSV/long listing reports file metadata and owner names. names::parse stores only username field 0 and numeric ID field 2 from passwd/group input; it discards password field 1. NumericNames also only converts a u32 ID to decimal text. No password field or credential reaches this output.",
+      "sourceHashes": {
+        "src/main.rs": "d81c22542e62d5bf78c28479bf44ee90638f152f8e465cf458cd63504875e21b",
+        "src/names.rs": "bd16b39ddf327364db1d169d453483dc444b12080fa3bf9a52b72f8ca5deb0fb",
+        "src/ports.rs": "a79f9ffe519e755acb518bacb8dfe982631d77c73c50c7fa5bbf7290765ba342",
+        "src/scan.rs": "f1fa812c5096bef09173f93c565e5f95f31f3c9fb101d2faf0f9b24d84b14198"
+      },
+      "flowDigests": [
+        "a3c7d46c8bb87813f689ebe8b0cdedfd22c71d5919526f712b22545cf6cb9a3a",
+        "bb3ef21869337b25f6bcd3b119864738e74a225af034b8fac4b1684bec823323"
+      ]
+    }
+  ]
+}

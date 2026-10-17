@@ -1,0 +1,10 @@
+#!/bin/sh
+# The `rcp` on every pod's PATH. The static binary is mounted next to it; this sets the
+# two things a pod's rcp needs from its environment, which ssh does not carry into a
+# session: the S3 credentials (a fleet worker's must come from here, never the command
+# line) and the ssh program with the suite's key. Each call is logged, so a test can show
+# which pod did the work.
+[ -r /etc/rcp-env/env ] && . /etc/rcp-env/env
+export RCP_SSH=/opt/rcp-interop/ssh
+echo "$(hostname) $*" >>/tmp/rcp-calls 2>/dev/null
+exec /opt/rcp-interop/rcp.real "$@"

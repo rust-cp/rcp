@@ -1,0 +1,239 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+  merge_group:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+env:
+  CARGO_TERM_COLOR: always
+  CARGO_INCREMENTAL: 0
+  RUSTFLAGS: -D warnings
+  # renovate: datasource=crate depName=cargo-vet
+  CARGO_VET_VERSION: 0.10.2
+  # renovate: datasource=npm depName=renovate
+  RENOVATE_VERSION: 44.121.4
+  # renovate: datasource=node-version depName=node
+  NODE_VERSION: 24.21.0
+
+jobs:
+  fmt:
+    name: fmt
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - run: rustup toolchain install stable --profile minimal --component rustfmt && rustup default stable
+      - run: cargo fmt --all --check
+
+  clippy:
+    name: clippy
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - run: rustup toolchain install stable --profile minimal --component clippy && rustup default stable
+      - run: sudo apt-get install -y --no-install-recommends libzstd-dev
+      - uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: |
+            ~/.cargo/registry
+            target
+          key: clippy-${{ runner.os }}-${{ hashFiles('Cargo.lock') }}
+      - run: cargo clippy --locked --all-targets --all-features
+
+  test:
+    name: test (${{ matrix.name }})
+    runs-on: ubuntu-24.04
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: default
+            features: ""
+          - name: rustls
+            features: --features rustls
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - run: rustup toolchain install stable --profile minimal --component clippy && rustup default stable
+      # zstd, impacket and paramiko are the peers some arms check against; the
+      # MIT KDC tools let the Kerberos arms run a real realm instead of skipping
+      - name: Test peers
+        # the image's package index can name versions the mirror has since dropped (measured:
+        # a 404 on libevent, which the KDC packages pull in), so refresh it first
+        run: |
+          sudo apt-get update -qq
+          sudo DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
+            zstd krb5-kdc krb5-admin-server krb5-user libgssapi-krb5-2
+          python3 -m pip install --user --require-hashes -r tests/support/requirements.txt
+      - uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: |
+            ~/.cargo/registry
+            target
+          key: test-${{ matrix.name }}-${{ runner.os }}-${{ hashFiles('Cargo.lock') }}
+      - run: |
+          read -r -a feature_args <<< "$FEATURES"
+          cargo test --locked "${feature_args[@]}"
+        env:
+          FEATURES: ${{ matrix.features }}
+          # a Kerberos arm without its KDC fails instead of reporting ok
+          RCP_REQUIRE_KDC: "1"
+
+  # The default build must stay free of third-party crates: that is what lets it build offline.
+  dependency-free:
+    name: dependency-free
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - run: rustup toolchain install stable --profile minimal --component clippy && rustup default stable
+      - run: |
+          deps=$(cargo tree --locked -e normal --prefix none | sort -u)
+          version=$(sed -n 's/^version = "\(.*\)"/\1/p' Cargo.toml | head -1)
+          [ "$deps" = "rcp v$version ($PWD)" ] || { printf 'the default build pulls in:\n%s\n' "$deps" >&2; exit 1; }
+
+  features:
+    name: features
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - run: rustup toolchain install stable --profile minimal --component clippy && rustup default stable
+      - run: sudo apt-get install -y --no-install-recommends libzstd-dev
+      - run: scripts/install-ci-tool.sh cargo-hack
+      - uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: |
+            ~/.cargo/registry
+            target
+          key: features-${{ runner.os }}-${{ hashFiles('Cargo.lock') }}
+      # Each feature alone, none, and every pair, rather than the full powerset of twelve
+      # features (4096 builds). Every `cfg` in the crate comes out both true and false within
+      # that set or the default build that the test jobs cover. Each run rebuilds the crate
+      # anyway, so cleaning between runs costs nothing and keeps the target directory small.
+      - run: cargo hack clippy --locked --clean-per-run --feature-powerset --depth 2 --all-targets -- -D warnings
+      # A build with no endpoint must refuse every scheme by name rather than read it as a
+      # local path, and only such a build can show it.
+      - run: cargo test --locked --no-default-features --lib
+
+  msrv:
+    name: msrv
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Install the toolchain named by rust-version
+        run: |
+          msrv=$(sed -n 's/^rust-version = "\(.*\)"/\1/p' Cargo.toml)
+          rustup toolchain install "$msrv" --profile minimal --component clippy && rustup default "$msrv"
+      - run: cargo clippy --locked --all-targets --features rustls -- -D warnings
+
+  docs:
+    name: docs
+    runs-on: ubuntu-24.04
+    env:
+      RUSTDOCFLAGS: -D warnings
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - run: rustup toolchain install stable --profile minimal --component clippy && rustup default stable
+      - run: sudo apt-get install -y --no-install-recommends libzstd-dev
+      - run: scripts/install-ci-tool.sh mdbook
+      - run: cargo doc --locked --no-deps --no-default-features
+      - run: cargo doc --locked --no-deps
+      - run: cargo doc --locked --no-deps --all-features
+      - run: cargo test --locked --doc
+      - run: cargo test --locked --doc --no-default-features
+      - run: cargo test --locked --doc --all-features
+      # The CLI reference page is kept current by tests/docs.rs, which the test job runs.
+      - run: mdbook build docs
+
+  # Licenses, advisories and registries.
+  deny:
+    name: deny
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - run: scripts/install-ci-tool.sh cargo-deny
+      - run: cargo deny --locked check
+
+  # Every crate in the lockfile is audited by a party named in supply-chain/config.toml, or
+  # exempted there by name.
+  vet:
+    name: vet
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - run: rustup toolchain install stable --profile minimal --component clippy && rustup default stable
+      - uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        id: cargo-vet
+        with:
+          path: ~/.cargo/bin/cargo-vet
+          key: cargo-vet-${{ env.CARGO_VET_VERSION }}-${{ runner.os }}
+      - if: steps.cargo-vet.outputs.cache-hit != 'true'
+        run: cargo install --locked cargo-vet --version "$CARGO_VET_VERSION"
+      - run: cargo vet --locked
+      - name: The committed SBOM matches the release dependency graph
+        run: |
+          cargo metadata --locked --features rustls --format-version 1 \
+            | python3 scripts/spdx-sbom.py --check rcp.spdx.json
+
+  # Static analysis of these workflows.
+  zizmor:
+    name: zizmor
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - run: scripts/install-ci-tool.sh zizmor
+      - run: zizmor --offline .github/workflows
+      - run: scripts/install-ci-tool.sh actionlint
+      - run: scripts/install-ci-tool.sh shellcheck
+      - run: actionlint
+      - run: scripts/install-ci-tool.sh gitleaks
+      # Current checkout only: no claim that this scans historical commits.
+      - run: gitleaks dir . --redact --no-banner
+      - run: python3 -m unittest discover -s scripts -p test_check_codeql_results.py
+      - run: python3 -m unittest discover -s scripts -p test_publish.py
+      - run: python3 -m unittest discover -s scripts -p test_spdx_sbom.py
+      - run: python3 -m unittest discover -s scripts -p test_sigstore_intoto.py
+      - run: python3 -m unittest discover -s scripts -p test_release_smoke.py
+      - run: shellcheck scripts/fuzz.sh
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+      - run: npm exec --yes --package "renovate@$RENOVATE_VERSION" -- renovate-config-validator --strict renovate.json
+
+  # One stable name for the repository ruleset to require, whatever the jobs above become.
+  # The ruleset expects the check name "ci", not the job id.
+  ci-success:
+    name: ci
+    if: always()
+    needs: [fmt, clippy, test, dependency-free, features, msrv, docs, deny, vet, zizmor]
+    runs-on: ubuntu-24.04
+    steps:
+      - if: contains(needs.*.result, 'failure') || contains(needs.*.result, 'cancelled')
+        run: exit 1

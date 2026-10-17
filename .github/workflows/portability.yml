@@ -1,0 +1,161 @@
+name: Portability validation
+
+# Manual: the native ARM64 and Windows jobs are long and run on demand.
+# No release, repository settings, or external publication is performed here.
+on:
+  workflow_dispatch:
+    inputs:
+      scope:
+        description: Qualification scope
+        type: choice
+        default: ordinary-arm64
+        options: [ordinary-arm64, arm64-abi, full-arm64, windows-local]
+
+permissions:
+  contents: read
+
+jobs:
+  arm64-abi:
+    name: Native ARM64 GLIBC baseline
+    if: inputs.scope == 'arm64-abi'
+    runs-on: ubuntu-24.04-arm
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+          fetch-depth: 1
+      - name: Build in pinned native older-libc supplier
+        run: |
+          test "$(uname -m)" = aarch64
+          mkdir -p "$RUNNER_TEMP/arm64-abi"
+          docker pull --platform linux/arm64 docker.io/library/rust@sha256:c90f06dc32cb5ba7716c1e65fc2c63b4a430580bd8b6a676e1028aed0ed53e5d
+          docker image inspect docker.io/library/rust@sha256:c90f06dc32cb5ba7716c1e65fc2c63b4a430580bd8b6a676e1028aed0ed53e5d > "$RUNNER_TEMP/arm64-abi/builder.json"
+          docker run --rm --platform linux/arm64 --mount "type=bind,source=$PWD,target=/src,readonly" --mount "type=bind,source=$RUNNER_TEMP/arm64-abi,target=/output" -w /src \
+            docker.io/library/rust@sha256:c90f06dc32cb5ba7716c1e65fc2c63b4a430580bd8b6a676e1028aed0ed53e5d \
+            bash -c 'set -euo pipefail; test "$(uname -m)" = aarch64; test "$(rustc -vV | sed -n "s/^host: //p")" = aarch64-unknown-linux-gnu; python3 -m unittest discover -s scripts -p test_check_glibc.py; bash scripts/build-gnu.sh /output aarch64-unknown-linux-gnu'
+      - name: Test exact candidate on pinned native UBI9 GLIBC 2.34
+        run: |
+          docker build --platform linux/arm64 -f container/compatibility-arm64.Dockerfile -t localhost/rcp-arm64-abi .
+          docker image inspect localhost/rcp-arm64-abi > "$RUNNER_TEMP/arm64-abi/runtime.json"
+          docker run --rm --platform linux/arm64 --network none localhost/rcp-arm64-abi rpm -qa | sort > "$RUNNER_TEMP/arm64-abi/runtime-packages.txt"
+          docker run --rm --platform linux/arm64 --network none --read-only --cap-drop ALL --security-opt no-new-privileges --tmpfs /tmp:rw,noexec,nosuid,nodev \
+            --mount "type=bind,source=$PWD/scripts,target=/scripts,readonly" --mount "type=bind,source=$RUNNER_TEMP/arm64-abi,target=/input,readonly" \
+            localhost/rcp-arm64-abi python3 -c 'import platform,runpy,sys; assert platform.machine() == "aarch64"; sys.argv=["/scripts/glibc-runtime-smoke.py","/input/rcp"]; runpy.run_path(sys.argv[0],run_name="__main__")' > "$RUNNER_TEMP/arm64-abi/runtime-smoke.json"
+          cat "$RUNNER_TEMP/arm64-abi/glibc-requirements.txt"
+          cat "$RUNNER_TEMP/arm64-abi/runtime-smoke.json"
+      - name: Package qualified development candidate
+        run: |
+          output="$RUNNER_TEMP/arm64-abi"
+          cp LICENSE "$output/LICENSE"
+          printf '%s\n' \
+            'GNU/Linux ARM64; default protocol features plus rustls.' \
+            'Maximum allowed GLIBC ABI: 2.34; exact required versions are in glibc-requirements.txt.' \
+            'Native functional smoke: UBI 9.8 ARM64 with GLIBC 2.34.' \
+            'Kerberos requires host GSSAPI; library loading checked, full protocol/KDC qualification pending.' \
+            'No FIPS claim. Development candidate; no release publication.' \
+            'Builder digest: sha256:c90f06dc32cb5ba7716c1e65fc2c63b4a430580bd8b6a676e1028aed0ed53e5d.' \
+            'Runtime digest: sha256:a28d61d9531d13cb1c0a70d2e9f214aee029db73b614149122747905d973de74.' > "$output/RUNTIME.txt"
+          (cd "$output" && sha256sum rcp > SHA256SUMS)
+          source_date_epoch=$(git show -s --format=%ct HEAD)
+          tar --sort=name --mtime="@$source_date_epoch" --owner=0 --group=0 --numeric-owner \
+            -C "$output" -cf - rcp LICENSE THIRD_PARTY_LICENSES.txt RUNTIME.txt SHA256SUMS glibc-requirements.txt \
+            | gzip -n > "$output/rcp-linux-arm64-glibc234-candidate.tar.gz"
+          (cd "$output" && sha256sum rcp-linux-arm64-glibc234-candidate.tar.gz > archive.sha256)
+          cat "$output/archive.sha256"
+      - name: Retain compatibility evidence
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: arm64-abi-evidence
+          path: ${{ runner.temp }}/arm64-abi
+          retention-days: 7
+
+  ordinary-arm64:
+    name: Native Linux ARM64 ordinary portability
+    if: inputs.scope == 'ordinary-arm64'
+    runs-on: ubuntu-24.04-arm
+    timeout-minutes: 45
+    env:
+      CARGO_INCREMENTAL: 0
+      RUSTFLAGS: -D warnings
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+          fetch-depth: 1
+      - name: Install ordinary portability toolchain
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y --no-install-recommends procps zstd libzstd-dev
+          rustup toolchain install 1.87.0 --profile minimal --component rustfmt --component clippy
+          rustup default 1.87.0
+      - run: bash scripts/test-linux-arm64.sh
+
+  linux-arm64:
+    name: Native Linux ARM64
+    if: inputs.scope == 'full-arm64'
+    runs-on: ubuntu-24.04-arm
+    timeout-minutes: 45
+    env:
+      CARGO_INCREMENTAL: 0
+      RUSTFLAGS: -D warnings
+      RCP_REQUIRE_KDC: "1"
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+          fetch-depth: 1
+      - name: Confirm native architecture
+        run: test "$(uname -m)" = aarch64
+      - name: Install test peers and toolchain
+        run: |
+          sudo apt-get update -qq
+          sudo DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
+            procps python3-venv zstd libzstd-dev krb5-kdc krb5-admin-server krb5-user libgssapi-krb5-2
+          python3 -m venv "$RUNNER_TEMP/peers"
+          "$RUNNER_TEMP/peers/bin/pip" install --require-hashes -r tests/support/requirements.txt
+          echo "$RUNNER_TEMP/peers/bin" >> "$GITHUB_PATH"
+          rustup toolchain install 1.87.0 --profile minimal --component rustfmt --component clippy
+          rustup default 1.87.0
+      - run: cargo fmt --all --check
+      - run: cargo clippy --locked --all-targets --all-features
+      # Includes local copy/verify/sync/deletion, MCP, job cancellation,
+      # protected opens, CPU crypto fallback vectors, and protocol contracts.
+      - run: cargo test --locked
+      - run: cargo test --locked --features rustls
+      - run: cargo test --locked --no-default-features --lib
+      - name: Validate the release candidate runtime
+        run: cargo test --locked --release --features rustls --test contract
+      - name: Build candidate package (not a release)
+        run: |
+          cargo build --locked --release --features rustls
+          mkdir -p target/portability
+          source_date_epoch=$(git show -s --format=%ct HEAD)
+          tar --sort=name --mtime="@$source_date_epoch" --owner=0 --group=0 --numeric-owner \
+            -C target/release -cf - rcp | gzip -n > target/portability/rcp-linux-arm64-candidate.tar.gz
+          sha256sum target/portability/rcp-linux-arm64-candidate.tar.gz
+          ldd target/release/rcp
+
+  windows-local:
+    name: Native Windows x86-64 NTFS candidate
+    if: inputs.scope == 'windows-local'
+    runs-on: windows-2022
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+          fetch-depth: 1
+      - run: rustup toolchain install 1.87.0 --profile minimal --component rustfmt --component clippy
+      - run: rustup default 1.87.0
+      # Windows supports a stated subset. Unsupported features produce a compile
+      # error; this job never reports the Unix process/peer contract as ported.
+      - run: ./scripts/test-windows.ps1 -BuildCandidate
+      - name: Retain Windows candidate evidence
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: windows-candidate-evidence
+          path: target/portability
+          retention-days: 7

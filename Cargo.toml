@@ -1,0 +1,74 @@
+[package]
+name = "rcp"
+version = "0.1.1"
+edition = "2021"
+rust-version = "1.87"
+description = "A dependency-free data mover: copy, verify, resume, sync and scan across local paths, NFS, S3, SMB, SFTP, WebDAV, HDFS, OCI registries and tar."
+license = "Apache-2.0"
+repository = "https://github.com/rust-cp/rcp"
+homepage = "https://rust-cp.github.io/rcp/"
+documentation = "https://rust-cp.github.io/rcp/"
+readme = "README.md"
+keywords = ["copy", "sync", "nfs", "s3", "smb"]
+categories = ["command-line-utilities", "filesystem", "network-programming"]
+publish = false
+exclude = ["/.github", "/bench", "/docs", "/scripts", "/fuzz", "/rcp.spdx.json"]
+
+# The default build compiles no third-party crates. Offline builds still need cached
+# registry metadata for the optional TLS dependencies; see docs/src/building.md.
+[dependencies]
+rustls = { version = "0.23", default-features = false, features = ["ring", "std", "tls12"], optional = true }
+
+[features]
+# Every endpoint is a feature, and all of them are on by default. None adds a dependency, so
+# the default build stays offline-buildable; turning one off leaves its adapter out of the
+# binary, and a URL for it is refused by name.
+default = ["nfs", "s3", "smb", "sftp", "remote", "dav", "hdfs", "https", "oci", "tar"]
+# nfs:// -- NFSv3 and NFSv4.0, with NFSACL, v4 ACLs and Kerberos; also `rcp show HOST`.
+nfs = []
+# s3:// -- S3 and S3-compatible object stores, with SigV4.
+s3 = []
+# smb:// -- SMB 2 and 3 shares, with NTLMv2 and signing.
+smb = []
+# sftp:// -- hosts with only OpenSSH, through its sftp subsystem.
+sftp = []
+# ssh:// and rcp:// -- rcp's own protocol to an `rcp serve` on the far side, with delta sync,
+# stream compression and `-via` relays; also the `serve` command itself.
+remote = []
+# dav:// and davs:// -- WebDAV.
+dav = []
+# hdfs:// -- HDFS through WebHDFS, with SPNEGO.
+hdfs = []
+# https:// and http:// -- read-only sources with a published index.
+https = []
+# oci:// -- container registries, mirrored like skopeo or crane.
+oci = []
+# tar:// -- tar archives, plain, gzip or zstd, with sparse members.
+tar = []
+# TLS for https://, davs://, rcps:// and TLS S3 endpoints, through rustls.
+rustls = ["dep:rustls"]
+# The ssh:// and rcp:// stream's zstd through the system libzstd instead of the built-in
+# codec. Links the C library; adds no crate dependency.
+system-zstd = ["remote"]
+
+[lints.rust]
+rust_2018_idioms = { level = "warn", priority = -1 }
+unsafe_op_in_unsafe_fn = "warn"
+unused_qualifications = "warn"
+
+[lints.clippy]
+all = { level = "warn", priority = -1 }
+# Protocol and codec code: calls mirror their wire messages, loops index several tables in
+# step as the specifications write them, and handler types name the whole exchange.
+needless_range_loop = "allow"
+too_many_arguments = "allow"
+type_complexity = "allow"
+
+[[bin]]
+name = "rcp"
+path = "src/main.rs"
+
+[profile.release]
+lto = true
+codegen-units = 1
+strip = true

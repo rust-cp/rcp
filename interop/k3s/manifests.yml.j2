@@ -1,0 +1,227 @@
+# Rendered by playbook.yml. Every pod that runs rcp mounts the same static binary and
+# wrapper from the host ({{ bin_dir }}), the ssh key and config, and the S3 environment.
+{% macro sshd_spec(tls=false) -%}
+containers:
+- name: sshd
+  image: {{ image_ssh }}
+  env:
+  - {name: PUID, value: "0"}
+  - {name: PGID, value: "0"}
+  - {name: USER_NAME, value: interop}
+  - {name: PUBLIC_KEY, value: "{{ public_key }}"}
+  ports: [{containerPort: 2222}]
+  readinessProbe:
+    tcpSocket: {port: 2222}
+    periodSeconds: 2
+  volumeMounts:
+  - {name: rcp-bin, mountPath: /opt/rcp-interop, readOnly: true}
+  - {name: rcp-wrapper, mountPath: /usr/local/bin/rcp, readOnly: true}
+  - {name: rcp-ssh, mountPath: /etc/rcp-ssh, readOnly: true}
+  - {name: rcp-env, mountPath: /etc/rcp-env, readOnly: true}
+  - {name: data, mountPath: /data}
+{% if tls %}
+  - {name: tls, mountPath: /etc/rcp-tls, readOnly: true}
+{% endif %}
+volumes:
+- name: rcp-bin
+  hostPath: {path: {{ bin_dir }}, type: Directory}
+- name: rcp-wrapper
+  hostPath: {path: {{ bin_dir }}/rcp, type: File}
+- name: rcp-ssh
+  secret: {secretName: rcp-ssh, defaultMode: 0400}
+- name: rcp-env
+  secret: {secretName: rcp-env, defaultMode: 0400}
+- name: data
+  emptyDir: {}
+{% if tls %}
+- name: tls
+  secret: {secretName: rcp-tls-client, defaultMode: 0400}
+{% endif %}
+{%- endmacro %}
+apiVersion: v1
+kind: Namespace
+metadata: {name: {{ ns }}}
+---
+# S3: VersityGW over a POSIX directory, the storage the fleet shares
+apiVersion: v1
+kind: Pod
+metadata: {name: s3, namespace: {{ ns }}, labels: {app: s3}}
+spec:
+  initContainers:
+  - name: bucket
+    image: {{ image_min }}
+    command: [mkdir, -p, /data/interop]
+    volumeMounts: [{name: data, mountPath: /data}]
+  containers:
+  - name: s3
+    image: {{ image_s3 }}
+    env:
+    - name: S3_SECRET
+      valueFrom: {secretKeyRef: {name: rcp-s3, key: secret}}
+    args: [--access, interop, --secret, "$(S3_SECRET)", --port, ":7070", posix, /data]
+    ports: [{containerPort: 7070}]
+    readinessProbe:
+      tcpSocket: {port: 7070}
+      periodSeconds: 2
+    volumeMounts: [{name: data, mountPath: /data}]
+  volumes: [{name: data, emptyDir: {}}]
+---
+apiVersion: v1
+kind: Service
+metadata: {name: s3, namespace: {{ ns }}}
+spec: {selector: {app: s3}, ports: [{port: 7070}]}
+---
+# the fleet: the workers `-nodes` spreads a copy over, each its own pod
+apiVersion: apps/v1
+kind: StatefulSet
+metadata: {name: node, namespace: {{ ns }}}
+spec:
+  serviceName: node
+  replicas: {{ nodes }}
+  podManagementPolicy: Parallel
+  selector: {matchLabels: {app: node}}
+  template:
+    metadata: {labels: {app: node}}
+    spec:
+      {{ sshd_spec() | indent(6) }}
+---
+apiVersion: v1
+kind: Service
+metadata: {name: node, namespace: {{ ns }}}
+spec: {clusterIP: None, selector: {app: node}, ports: [{port: 2222}]}
+---
+# the relay chain: client -> hop-a -> hop-b, and only a pod with role=hop may reach hop-b
+apiVersion: v1
+kind: Pod
+metadata: {name: hop-a, namespace: {{ ns }}, labels: {app: hop-a, role: hop}}
+spec:
+  {{ sshd_spec() | indent(2) }}
+---
+apiVersion: v1
+kind: Service
+metadata: {name: hop-a, namespace: {{ ns }}}
+spec: {selector: {app: hop-a}, ports: [{port: 2222}]}
+---
+apiVersion: v1
+kind: Pod
+metadata: {name: hop-b, namespace: {{ ns }}, labels: {app: hop-b}}
+spec:
+  {{ sshd_spec() | indent(2) }}
+---
+apiVersion: v1
+kind: Service
+metadata: {name: hop-b, namespace: {{ ns }}}
+spec: {selector: {app: hop-b}, ports: [{port: 2222}]}
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata: {name: hop-b-only-from-hops, namespace: {{ ns }}}
+spec:
+  podSelector: {matchLabels: {app: hop-b}}
+  policyTypes: [Ingress]
+  ingress: [{from: [{podSelector: {matchLabels: {role: hop}}}]}]
+---
+# rcps://: `rcp serve -listen` inside TLS, requiring a client certificate from the suite's CA
+apiVersion: v1
+kind: Pod
+metadata: {name: rcps, namespace: {{ ns }}, labels: {app: rcps}}
+spec:
+  containers:
+  - name: serve
+    image: {{ image_min }}
+    command: [/opt/rcp-interop/rcp.real, serve, -listen, "0.0.0.0:7712", -allow, /data,
+              -tls.cert, /etc/rcp-tls/serve.crt, -tls.key, /etc/rcp-tls/serve.key,
+              -tls.clientca, /etc/rcp-tls/ca.crt]
+    ports: [{containerPort: 7712}]
+    readinessProbe:
+      tcpSocket: {port: 7712}
+      periodSeconds: 2
+    volumeMounts:
+    - {name: rcp-bin, mountPath: /opt/rcp-interop, readOnly: true}
+    - {name: tls, mountPath: /etc/rcp-tls, readOnly: true}
+    - {name: data, mountPath: /data}
+  volumes:
+  - name: rcp-bin
+    hostPath: {path: {{ bin_dir }}, type: Directory}
+  - name: tls
+    secret: {secretName: rcp-tls-serve, defaultMode: 0400}
+  - name: data
+    emptyDir: {}
+---
+apiVersion: v1
+kind: Service
+metadata: {name: rcps, namespace: {{ ns }}}
+spec: {selector: {app: rcps}, ports: [{port: 7712}]}
+---
+# the client every scenario runs from: no role=hop, so it cannot reach hop-b itself
+apiVersion: v1
+kind: Pod
+metadata: {name: client, namespace: {{ ns }}, labels: {app: client}}
+spec:
+  {{ sshd_spec(tls=true) | indent(2) }}
+---
+# Kerberos: a KDC and NFS-Ganesha exporting with RPCSEC_GSS only, in one pod named for the
+# host the client dials (its service key is nfs/krb). Privileged, since Ganesha's VFS layer
+# opens files by handle.
+apiVersion: v1
+kind: Pod
+metadata: {name: krb, namespace: {{ ns }}, labels: {app: krb}}
+spec:
+  containers:
+  - name: krb
+    image: {{ image_debian }}
+    command: [sh, /etc/rcp-krb/krb-server.sh]
+    securityContext: {privileged: true}
+    ports: [{containerPort: 88}, {containerPort: 2049}, {containerPort: 20048}]
+    readinessProbe:
+      tcpSocket: {port: 2049}
+      periodSeconds: 2
+    volumeMounts:
+    - {name: krb, mountPath: /etc/rcp-krb, readOnly: true}
+    - {name: krb-secret, mountPath: /etc/rcp-krb-secret, readOnly: true}
+    - {name: export, mountPath: /export}
+  volumes:
+  - name: krb
+    configMap: {name: rcp-krb}
+  - name: krb-secret
+    secret: {secretName: rcp-krb, defaultMode: 0400}
+  - name: export
+    emptyDir: {}
+---
+apiVersion: v1
+kind: Service
+metadata: {name: krb, namespace: {{ ns }}}
+spec:
+  selector: {app: krb}
+  ports: [{name: kdc, port: 88}, {name: nfs, port: 2049}, {name: mount, port: 20048}]
+---
+# the Kerberos client: the system GSSAPI library, a ticket, and the dynamically linked rcp
+# (a static one cannot load the library)
+apiVersion: v1
+kind: Pod
+metadata: {name: krbclient, namespace: {{ ns }}, labels: {app: krbclient}}
+spec:
+  containers:
+  - name: krbclient
+    image: {{ image_debian }}
+    command: [sh, /etc/rcp-krb/krb-client.sh]
+    env:
+    - {name: RCP_NFS_PORT, value: "2049"}
+    - {name: RCP_MOUNT_PORT, value: "20048"}
+    readinessProbe:
+      exec: {command: [test, -f, /tmp/ready]}
+      periodSeconds: 2
+    volumeMounts:
+    - {name: rcp-bin, mountPath: /opt/rcp-interop, readOnly: true}
+    - {name: krb, mountPath: /etc/rcp-krb, readOnly: true}
+    - {name: krb-secret, mountPath: /etc/rcp-krb-secret, readOnly: true}
+    - {name: data, mountPath: /data}
+  volumes:
+  - name: rcp-bin
+    hostPath: {path: {{ bin_dir }}, type: Directory}
+  - name: krb
+    configMap: {name: rcp-krb}
+  - name: krb-secret
+    secret: {secretName: rcp-krb, defaultMode: 0400}
+  - name: data
+    emptyDir: {}

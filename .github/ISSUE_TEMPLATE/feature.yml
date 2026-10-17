@@ -1,0 +1,26 @@
+name: Feature
+description: A command, endpoint, or option that rcp does not have yet
+title: "feat: "
+labels: []
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem
+      description: What you are trying to move, and why the current commands do not cover it.
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposal
+      description: The command or endpoint spelling you would type, and what success looks like.
+    validations:
+      required: true
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives
+      description: Other ways you considered, including doing it outside rcp.
+    validations:
+      required: false

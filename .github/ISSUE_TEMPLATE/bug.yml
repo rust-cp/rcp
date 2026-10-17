@@ -1,0 +1,41 @@
+name: Bug
+description: A copy, verify, resume, or scan that did the wrong thing
+title: "fix: "
+labels: []
+body:
+  - type: textarea
+    id: summary
+    attributes:
+      label: What happened
+      description: What you ran, what you expected, and what rcp did instead. Paste the command with secrets removed.
+    validations:
+      required: true
+  - type: textarea
+    id: endpoints
+    attributes:
+      label: Endpoints
+      description: Source and destination, for example local to s3://, or nfs to local. Include versions of the server when you know them.
+    validations:
+      required: true
+  - type: input
+    id: version
+    attributes:
+      label: rcp version
+      description: Output of `rcp version`, or the release archive name.
+      placeholder: "0.1.0"
+    validations:
+      required: true
+  - type: textarea
+    id: environment
+    attributes:
+      label: Environment
+      description: OS, kernel, filesystem, and whether this was a release binary or a build from source.
+    validations:
+      required: false
+  - type: textarea
+    id: logs
+    attributes:
+      label: Output
+      description: The relevant lines, including any catalog id. Remove hostnames, keys, and passwords first.
+    validations:
+      required: false

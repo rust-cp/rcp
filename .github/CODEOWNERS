@@ -1,0 +1,3 @@
+# Default review requests. Turning on "require review from code owners" needs a
+# second person who can approve; one maintainer cannot approve their own pull request.
+* @jonathanagustin

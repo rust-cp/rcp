@@ -1,0 +1,55 @@
+[package]
+name = "rcp-fuzz"
+version = "0.0.0"
+publish = false
+edition = "2021"
+license = "Apache-2.0"
+description = "libFuzzer targets for rcp parsers. Not part of the release binary."
+
+[package.metadata]
+cargo-fuzz = true
+
+# A separate workspace so this crate's libFuzzer dependency stays out of the
+# release lockfile. The default rcp build still compiles no third-party crate.
+[workspace]
+
+[dependencies]
+libfuzzer-sys = "0.4"
+
+[dependencies.rcp]
+path = ".."
+
+[profile.release]
+panic = "abort"
+overflow-checks = true
+debug = 1
+lto = false
+codegen-units = 16
+
+[[bin]]
+name = "json"
+path = "fuzz_targets/json.rs"
+test = false
+doc = false
+bench = false
+
+[[bin]]
+name = "zstd"
+path = "fuzz_targets/zstd.rs"
+test = false
+doc = false
+bench = false
+
+[[bin]]
+name = "deflate"
+path = "fuzz_targets/deflate.rs"
+test = false
+doc = false
+bench = false
+
+[[bin]]
+name = "lz4"
+path = "fuzz_targets/lz4.rs"
+test = false
+doc = false
+bench = false

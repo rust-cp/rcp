@@ -1,0 +1,1 @@
+ext4   /dev/sde rw,relatime,discard,errors=remount-ro,data=ordered

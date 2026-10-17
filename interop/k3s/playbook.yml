@@ -1,0 +1,269 @@
+# Stands up what rcp's multi-host features need, on one k3s cluster: an S3 server, a
+# fleet of ssh nodes for -nodes, a relay chain for -via where the last hop is reachable
+# only through the first, and an rcps:// listener that requires a client certificate.
+# tests.sh then runs the scenarios from a client pod. The same playbook runs on a laptop,
+# in a sandbox and on a CI runner:
+#
+#   ansible-playbook interop/k3s/playbook.yml [-e rcp_bin=/path/to/static/rcp]
+#
+# A cluster already answering on the kubeconfig is used as it is. Otherwise k3s is brought
+# up: by K3S_BOOTSTRAP (a command) when set, else the pinned release below, checksum
+# verified. Everything the suite creates lives in one namespace, and `-e state=absent`
+# deletes it.
+- name: rcp against a k3s cluster
+  hosts: localhost
+  connection: local
+  gather_facts: false
+  vars:
+    repo: "{{ playbook_dir }}/../.."
+    # absolute, since the tasks below neither run in nor resolve against the caller's directory
+    rcp_bin: "{{ lookup('env', 'RCP') | default(repo ~ '/target/x86_64-unknown-linux-gnu/release/rcp', true) | realpath }}"
+    # Kerberos goes through the system GSSAPI library, which only a dynamically linked rcp
+    # can load, so the Kerberos client runs this build instead
+    rcp_dyn_bin: "{{ lookup('env', 'RCP_DYN') | default(repo ~ '/target/release/rcp', true) | realpath }}"
+    work: "{{ lookup('env', 'INTEROP_K3S_WORK') | default('/tmp/rcp-k3s', true) }}"
+    kubeconfig: "{{ lookup('env', 'KUBECONFIG') | default('/etc/rancher/k3s/k3s.yaml', true) }}"
+    k3s_bootstrap: "{{ lookup('env', 'K3S_BOOTSTRAP') }}"
+    k3s_version: v1.36.3+k3s1
+    k3s_sha256: 2f98a9f8fe5782479ee2d54e70a1b10a7f6fd4cae8d38ed3098452dc6eed76b5
+    state: present
+    ns: rcp-interop
+    nodes: 3
+    bin_dir: /opt/rcp-interop
+    image_ssh: ghcr.io/linuxserver/openssh-server:latest@sha256:946fa26105e0ec212fdf821b9ddc59aab65f2c2d07c02b25ff0f5001fc332ff0
+    image_s3: versity/versitygw:latest@sha256:30292fc2eeacc67a36993b01f7a7a5e3361a19cced0e80c1d71cfa2a4b0a2499
+    image_min: busybox:1.37@sha256:bdf57e528e45e4433820e045b29b4597825a1c9e38353532d90a01445013f82e
+    image_debian: debian:stable-slim@sha256:5bc3287b25407c965a30f38e32603dc253a3869e1b12a21ac09bfc27fd8b13ce
+  environment:
+    KUBECONFIG: "{{ kubeconfig }}"
+  tasks:
+    - name: Remove the suite
+      when: state == 'absent'
+      block:
+        - name: Delete the namespace
+          ansible.builtin.command: kubectl delete namespace {{ ns }} --ignore-not-found --wait=true
+          changed_when: true
+        - name: Done
+          ansible.builtin.meta: end_play
+
+    - name: The rcp under test is a static build, since it runs inside the pods too
+      ansible.builtin.command: file -L {{ rcp_bin }}
+      register: rcp_file
+      changed_when: false
+      failed_when: rcp_file.rc != 0 or 'static' not in rcp_file.stdout
+
+    - name: The rcp the Kerberos client runs is a dynamic build
+      ansible.builtin.command: file -L {{ rcp_dyn_bin }}
+      register: rcp_dyn_file
+      changed_when: false
+      failed_when: rcp_dyn_file.rc != 0 or 'dynamically linked' not in rcp_dyn_file.stdout
+
+    - name: Is a cluster answering
+      ansible.builtin.command: kubectl get --raw /readyz
+      register: readyz
+      changed_when: false
+      failed_when: false
+
+    - name: Bring k3s up
+      when: readyz.rc != 0
+      block:
+        - name: With the bootstrap this machine names
+          when: k3s_bootstrap | length > 0
+          ansible.builtin.command: "{{ k3s_bootstrap }}"
+          changed_when: true
+
+        - name: With the pinned k3s release
+          when: k3s_bootstrap | length == 0
+          become: true
+          block:
+            - name: Download k3s, checked against the release's own checksums
+              ansible.builtin.get_url:
+                url: "https://github.com/k3s-io/k3s/releases/download/{{ k3s_version | urlencode }}/k3s"
+                checksum: "sha256:{{ k3s_sha256 }}"
+                dest: /usr/local/bin/k3s
+                mode: "0755"
+            - name: Start the server
+              ansible.builtin.shell: >
+                nohup /usr/local/bin/k3s server --disable=traefik,metrics-server
+                --write-kubeconfig-mode=644 </dev/null >/var/log/k3s.log 2>&1 &
+              changed_when: true
+
+    - name: Wait for the API server
+      ansible.builtin.command: kubectl get --raw /readyz
+      register: up
+      until: up.rc == 0
+      retries: 60
+      delay: 5
+      changed_when: false
+
+    # a cluster that just started answers /readyz before its node registers
+    - name: Wait for a Ready node
+      ansible.builtin.command: kubectl wait --for=condition=Ready node --all --timeout=10s
+      register: node_ready
+      until: node_ready.rc == 0
+      retries: 30
+      delay: 5
+      changed_when: false
+
+    - name: Work directory
+      ansible.builtin.file:
+        path: "{{ work }}"
+        state: directory
+        mode: "0700"
+
+    - name: The binary and its wrappers, where the pods mount them
+      become: true
+      block:
+        - name: Directory
+          ansible.builtin.file:
+            path: "{{ bin_dir }}"
+            state: directory
+            mode: "0755"
+        - name: Static rcp
+          ansible.builtin.copy:
+            src: "{{ rcp_bin }}"
+            dest: "{{ bin_dir }}/rcp.real"
+            mode: "0755"
+          register: rcp_copied
+        - name: Dynamic rcp
+          ansible.builtin.copy:
+            src: "{{ rcp_dyn_bin }}"
+            dest: "{{ bin_dir }}/rcp-dyn"
+            mode: "0755"
+        - name: Wrappers
+          ansible.builtin.copy:
+            src: "files/{{ item }}"
+            dest: "{{ bin_dir }}/{{ item }}"
+            mode: "0755"
+          loop: [rcp, ssh]
+
+    - name: An ssh key for the suite
+      ansible.builtin.command: ssh-keygen -q -t ed25519 -N '' -C rcp-interop -f {{ work }}/id_ed25519
+      args:
+        creates: "{{ work }}/id_ed25519"
+
+    - name: An S3 secret key, with no newline, since the Secret carries the file's bytes
+      ansible.builtin.shell: printf %s "$(openssl rand -hex 20)" > {{ work }}/s3-secret
+      args:
+        creates: "{{ work }}/s3-secret"
+
+    - name: The Kerberos realm's master password and the user's, with no newline
+      ansible.builtin.shell: printf %s "$(openssl rand -hex 16)" > {{ work }}/{{ item }}
+      args:
+        creates: "{{ work }}/{{ item }}"
+      loop: [krb-master, krb-user]
+
+    - name: A CA, a serve certificate, a client certificate, and a second CA that is not trusted
+      ansible.builtin.shell: |
+        set -eu
+        cd {{ work }}
+        ca() { # ca NAME
+          openssl req -x509 -newkey ec -pkeyopt ec_paramgen_curve:prime256v1 -nodes \
+            -keyout "$1.key" -out "$1.crt" -days 2 -subj "/CN=rcp-interop $1" 2>/dev/null
+        }
+        leaf() { # leaf NAME ISSUER EXTENSIONS
+          openssl req -newkey ec -pkeyopt ec_paramgen_curve:prime256v1 -nodes \
+            -keyout "$1.key" -out "$1.csr" -subj "/CN=$1" 2>/dev/null
+          printf '%s\n' "$3" > "$1.ext"
+          openssl x509 -req -in "$1.csr" -CA "$2.crt" -CAkey "$2.key" -CAcreateserial \
+            -out "$1.crt" -days 2 -extfile "$1.ext" 2>/dev/null
+        }
+        ca ca
+        ca rogue-ca
+        leaf serve ca "subjectAltName=DNS:rcps,DNS:rcps.{{ ns }}.svc,DNS:rcps.{{ ns }}.svc.cluster.local
+        extendedKeyUsage=serverAuth"
+        leaf client ca "extendedKeyUsage=clientAuth"
+        leaf rogue rogue-ca "extendedKeyUsage=clientAuth"
+      args:
+        creates: "{{ work }}/rogue.crt"
+
+    - name: The ssh settings every pod dials with
+      ansible.builtin.copy:
+        dest: "{{ work }}/ssh_config"
+        mode: "0600"
+        content: |
+          Host node-* hop-*
+            Port 2222
+            User interop
+            IdentityFile /etc/rcp-ssh/id_ed25519
+            BatchMode yes
+            StrictHostKeyChecking no
+            UserKnownHostsFile /dev/null
+            LogLevel ERROR
+            ConnectTimeout 5
+
+    - name: The S3 environment every pod's rcp loads
+      ansible.builtin.copy:
+        dest: "{{ work }}/rcp-env"
+        mode: "0600"
+        content: |
+          export AWS_ACCESS_KEY_ID=interop
+          export AWS_SECRET_ACCESS_KEY={{ lookup('file', work ~ '/s3-secret') }}
+          export AWS_REGION=us-east-1
+          export RCP_S3_ENDPOINT=http://s3.{{ ns }}.svc.cluster.local:7070
+
+    - name: Namespace
+      ansible.builtin.shell: kubectl create namespace {{ ns }} --dry-run=client -o yaml | kubectl apply -f -
+      changed_when: true
+
+    # a pod in a namespace is refused until the controller has made its default ServiceAccount
+    - name: Wait for the namespace's default ServiceAccount
+      ansible.builtin.command: kubectl -n {{ ns }} get serviceaccount default
+      register: sa
+      until: sa.rc == 0
+      retries: 30
+      delay: 2
+      changed_when: false
+
+    - name: Secrets
+      ansible.builtin.shell: |
+        set -eu
+        cd {{ work }}
+        s() { kubectl -n {{ ns }} create secret generic "$@" --dry-run=client -o yaml | kubectl apply -f -; }
+        s rcp-ssh --from-file=id_ed25519 --from-file=config=ssh_config
+        s rcp-env --from-file=env=rcp-env
+        s rcp-s3 --from-file=secret=s3-secret
+        s rcp-tls-serve --from-file=ca.crt --from-file=serve.crt --from-file=serve.key
+        s rcp-krb --from-file=master=krb-master --from-file=user=krb-user
+        kubectl -n {{ ns }} create configmap rcp-krb --dry-run=client -o yaml \
+          --from-file={{ playbook_dir }}/files/krb5.conf \
+          --from-file={{ playbook_dir }}/files/krb-server.sh \
+          --from-file={{ playbook_dir }}/files/krb-client.sh | kubectl apply -f -
+        s rcp-tls-client --from-file=ca.crt --from-file=client.crt --from-file=client.key \
+          --from-file=rogue.crt --from-file=rogue.key --from-file=rogue-ca.crt
+      changed_when: true
+
+    - name: Render the objects
+      ansible.builtin.template:
+        src: manifests.yml.j2
+        dest: "{{ work }}/manifests.yml"
+        mode: "0600"
+      vars:
+        public_key: "{{ lookup('file', work ~ '/id_ed25519.pub') }}"
+
+    # every other pod execs the binary per call; this one runs it, so a new build must restart it
+    - name: Restart the rcps serve when the binary changed
+      when: rcp_copied is changed
+      ansible.builtin.command: kubectl -n {{ ns }} delete pod rcps --ignore-not-found --wait=true
+      changed_when: true
+
+    - name: Apply them
+      ansible.builtin.command: kubectl apply -f {{ work }}/manifests.yml
+      changed_when: true
+
+    - name: Wait until every pod answers on its port, which is what readiness checks here
+      ansible.builtin.command: kubectl -n {{ ns }} wait --for=condition=Ready pod --all --timeout=300s
+      changed_when: false
+
+    # A running pod's mounted Secret is refreshed on the kubelet's sync period, not when the
+    # Secret changes, so a re-run that made a new S3 key would otherwise test the old one:
+    # measured as SignatureDoesNotMatch until the mount caught up.
+    - name: Wait until the pods' mounted environment is the one just applied
+      ansible.builtin.shell: >
+        test "$(kubectl -n {{ ns }} exec client -- sha256sum /etc/rcp-env/env | cut -d' ' -f1)"
+        = "$(sha256sum {{ work }}/rcp-env | cut -d' ' -f1)"
+      register: synced
+      until: synced.rc == 0
+      retries: 36
+      delay: 5
+      changed_when: false

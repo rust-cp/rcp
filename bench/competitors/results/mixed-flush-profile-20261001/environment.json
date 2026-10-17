@@ -1,0 +1,35 @@
+{
+  "versions": {
+    "rcp": "rcp 0.1.0 (no runtime dependencies)\ntransports: local, tar (ustar + pax), ssh (rcp serve), rcp (a listening rcp serve, loopback only), rcps (the same over TLS; mutual TLS lifts loopback), sftp (OpenSSH subsystem, v3), nfs (v3, v4.0; sys, krb5, krb5i, krb5p), hdfs (webhdfs, pseudo or spnego), s3 (http and https), oci (http and https), dav (http and https)\nio_uring: available\nkerberos: available (the host's GSSAPI library)\nblake3: portable, chunks over up to 4 threads\nsha256: hardware (SHA-NI)\n",
+    "rsync": "rsync  version 3.2.7  protocol version 31\nCopyright (C) 1996-2022 by Andrew Tridgell, Wayne Davison, and others.\nWeb site: https://rsync.samba.org/\nCapabilities:\n    64-bit files, 64-bit inums, 64-bit timestamps, 64-bit long ints,\n    socketpairs, symlinks, symtimes, hardlinks, hardlink-specials,\n    hardlink-symlinks, IPv6, atimes, batchfiles, inplace, append, ACLs,\n    xattrs, optional secluded-args, iconv, prealloc, stop-at, no crtimes\nOptimizations:\n    SIMD-roll, no asm-roll, openssl-crypto, no asm-MD5\nChecksum list:\n    xxh128 xxh3 xxh64 (xxhash) md5 md4 sha1 none\nCompress list:\n    zstd lz4 zlibx zlib none\nDaemon auth list:\n    sha512 sha256 sha1 md5 md4\n\nrsync comes with ABSOLUTELY NO WARRANTY.  This is free software, and you\nare welcome to redistribute it under certain conditions.  See the GNU\nGeneral Public Licence for details.\n",
+    "rclone": "rclone v1.74.4\n- os/version: ubuntu 24.04 (64 bit)\n- os/kernel: 6.18.40.1-microsoft-standard-WSL2 (x86_64)\n- os/type: linux\n- os/arch: amd64\n- go/version: go1.26.5\n- go/linking: static\n- go/tags: none\n",
+    "cp": "cp (GNU coreutils) 9.4\nCopyright (C) 2023 Free Software Foundation, Inc.\nLicense GPLv3+: GNU GPL version 3 or later <https://gnu.org/licenses/gpl.html>.\nThis is free software: you are free to change and redistribute it.\nThere is NO WARRANTY, to the extent permitted by law.\n\nWritten by Torbj\u00f6rn Granlund, David MacKenzie, and Jim Meyering.\n"
+  },
+  "executables": {
+    "rcp": "/var/tmp/rcp-competitor-binary-20261001/rcp-v0.1.0-x86_64-unknown-linux-gnu/rcp",
+    "rsync": "/usr/bin/rsync",
+    "rclone": "/usr/bin/rclone",
+    "cp": "/usr/bin/cp"
+  },
+  "executable_sha256": {
+    "rcp": "1657ddc25a3a8427dc705c29f39dfcb750eb0a565413a31e6d91904d186424d7",
+    "rsync": "6b4fb867cb49d0332b72b234656311c807ab68b0537905fda7a3e7481a139f16",
+    "rclone": "9f56ca5edfac24a3ed37226c2ba1de69f1ec9e05fa2526cddee5cd97e202be6b",
+    "cp": "95cdd604fdf0a292e349d27d1a80170ca0913bd3bbd9d2c0fcfc6c8adaebe2f0"
+  },
+  "kernel": "6.18.40.1-microsoft-standard-WSL2",
+  "machine": "x86_64",
+  "python": "3.12.3",
+  "cpu_count": 4,
+  "binary_sha256": "1657ddc25a3a8427dc705c29f39dfcb750eb0a565413a31e6d91904d186424d7",
+  "archive_sha256": "1d39749d7811c273b9c5265e138006b1294462bfbdae9dc77e02a0c278399784",
+  "rcp_commit": "02b75bd980e0a8639d9a6f67a1fa58983474a068",
+  "seed": 20261001,
+  "memory_info": [
+    "MemTotal:        4013328 kB",
+    "MemFree:          958304 kB",
+    "MemAvailable:    2831244 kB"
+  ],
+  "profiling_shim": "/var/tmp/rcp-profile-flush-20261001.so",
+  "profiling_shim_sha256": "a11d75f5baf4277e0ce9069ad3e4b6a60d6fde03a97e4e1b69843aa3d62d9e64"
+}

@@ -1,0 +1,9 @@
+[book]
+title = "rcp"
+authors = ["Jonathan Agustin"]
+language = "en"
+src = "src"
+
+[output.html]
+git-repository-url = "https://github.com/rust-cp/rcp"
+edit-url-template = "https://github.com/rust-cp/rcp/edit/main/docs/src/{path}"

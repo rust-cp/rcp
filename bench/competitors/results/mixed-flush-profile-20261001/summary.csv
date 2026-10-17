@@ -1,0 +1,4 @@
+workload,case,tool,runs,median_transfer_s,median_completion_s,min_completion_s,max_completion_s,median_cpu_s,median_sampled_tree_rss_bytes,median_fs_output_bytes
+mixed,changed,rcp,5,0.122035007,0.299769308,0.240310598,0.437416359,0.025846,6336512,0
+mixed,changed,rsync,5,0.080240315,0.279700426,0.235472318,0.412812564,0.029462,15003648,0
+mixed,changed,rclone,5,0.106553869,0.314586614,0.265946591,0.469156361,0.160491,65863680,0

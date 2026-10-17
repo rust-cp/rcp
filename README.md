@@ -1,5 +1,8 @@
 # rcp
 
+[![OpenSSF Scorecard](https://api.scorecard.dev/projects/github.com/rust-cp/rcp/badge)](https://scorecard.dev/viewer/?uri=github.com/rust-cp/rcp)
+[![OpenSSF Best Practices](https://www.bestpractices.dev/projects/15635/badge)](https://www.bestpractices.dev/projects/15635)
+
 rcp copies, verifies, resumes, and syncs trees. One binary talks to local disks and to
 network storage, records every transfer in a catalog, and sends no telemetry.
 

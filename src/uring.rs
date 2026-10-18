@@ -1,5 +1,5 @@
 //! An io_uring copy engine, std-only: the ring is set up with raw syscalls and the shared
-//! memory is mapped by hand, because the point of this crate is a binary with no dependencies
+//! memory is mapped by hand, because this crate keeps its dependencies to cryptography
 //! and the point of this module is concurrency without threads.
 //!
 //! Each worker owns one ring and drives up to `MAX_JOBS` files at once as small state

@@ -10,7 +10,7 @@ description = "libFuzzer targets for rcp parsers. Not part of the release binary
 cargo-fuzz = true
 
 # A separate workspace so this crate's libFuzzer dependency stays out of the
-# release lockfile. The default rcp build still compiles no third-party crate.
+# release lockfile. The default rcp build's only third-party crates are cryptography.
 [workspace]
 
 [dependencies]

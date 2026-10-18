@@ -60,7 +60,7 @@ every worker launched in cluster mode. `INFO`, the default, writes none, and any
 is refused. `-dircount SIZE` (default `64k`) is the READDIRPLUS request size on an export
 (on v4, the READDIR `dircount`). `-nfs.vers 3|4` and `-nfs.sec
 sys|krb5|krb5i|krb5p` are described under NFS above. `-md5` checksums the files the way `-sha256` does; the digest
-is SHA-256 unless `-blake3` selects BLAKE3 (pure Rust, tree-parallel over 1 KiB chunks,
+is SHA-256 unless `-blake3` selects BLAKE3 (the official `blake3` crate with its SIMD kernels,
 several times faster per core; not a FIPS digest, which is why SHA-256 stays the default).
 The `-csv` column and `{hash}` placeholder follow the digest in force. Accepted and without effect:
 `-nonames` on commands without listings, `-preserve-atime` on commands that only read

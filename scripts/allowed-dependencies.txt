@@ -1,0 +1,38 @@
+# Every crate the DEFAULT build may compile, on any target, normal and build edges.
+# CI (`dependency-allowlist`) fails on anything not listed here. Adding a line is a
+# reviewed decision: the crate's license must pass deny.toml and it must be audited or
+# exempted in supply-chain/.
+#
+# The approved cryptography crates.
+aes
+blake3
+cmac
+hmac
+md-5
+md4
+sha2
+# Their RustCrypto support crates.
+block-buffer
+cipher
+cmov
+const-oid
+cpubits
+cpufeatures
+crypto-common
+ctutils
+dbl
+digest
+hybrid-array
+inout
+typenum
+# blake3's runtime support crates.
+arrayvec
+constant_time_eq
+# Shared helpers: cfg-if everywhere, libc where cpufeatures reads the CPU's feature bits
+# from the OS (Linux ARM64, Apple).
+cfg-if
+libc
+# blake3's build script compiles its assembly and C SIMD kernels.
+cc
+find-msvc-tools
+shlex

@@ -7,7 +7,7 @@ The `copy` family has two file engines and picks one at runtime.
 chunk as it lands, hash chunks in offset order, apply metadata, close. One thread keeps a
 queue depth of dozens of operations, which is what an NFS server or an NVMe device needs to
 show its throughput; a thread doing one blocking read then one blocking write cannot. The ring
-is set up with raw syscalls and hand-mapped shared memory, so the binary stays dependency-free.
+is set up with raw syscalls and hand-mapped shared memory rather than through a crate.
 Kernels older than 5.6, or hosts where `io_uring_setup` is disabled by policy (a common
 hardening setting, and Docker's default seccomp profile), make the setup fail and the thread
 engine takes over with no difference in the result.

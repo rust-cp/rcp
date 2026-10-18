@@ -4,23 +4,37 @@ See [platform validation](portability.md) for Linux ARM64 work and the Windows
 portability blockers. A successful cross-check is not native runtime validation.
 
 ```sh
-cargo build --release --offline          # compiles no dependency; see below for what --offline needs
-RUSTFLAGS='-C target-feature=+crt-static' cargo build --release --offline   # static binary
-cargo test --offline
-cargo build --release --features rustls  # https:// S3 endpoints; fetches rustls once
+cargo build --release                    # the default build; see below for --offline
+RUSTFLAGS='-C target-feature=+crt-static' cargo build --release   # static binary
+cargo test
+cargo build --release --features rustls  # https:// S3 endpoints; adds rustls and ring
 ```
 
-All commands run from the repository root. The default build compiles no crate but this
-one, and CI asserts it with `cargo tree`. It does **not** build with an empty registry
-cache. Measured on cargo 1.98 with an empty `CARGO_HOME`, `cargo test --offline --locked`
-fails with "no matching package named `rustls` found": cargo resolves optional dependencies
-too, so the lockfile's TLS entries need the registry index even when the `rustls` feature is
-off. An air-gapped host therefore needs one of two things before `--offline` works:
-the registry metadata copied from a connected host (run `cargo fetch --locked` there and
-carry `~/.cargo/registry` across), or a `cargo vendor` directory. Neither is compiled into
-the default binary. Removing the need altogether means moving TLS into a separate crate. The
-`rustls` build adds rustls and ring, the one thing the standard library does not have, and
-is the one to ship where buckets live behind HTTPS.
+All commands run from the repository root. The default build compiles this crate, the
+audited open-source cryptography crates it uses -- RustCrypto `sha2`, `hmac`, `md4`,
+`md-5`, `aes` and `cmac`, and the official `blake3` -- and the small support crates those
+need (`digest`, `cipher`, `hybrid-array`, `typenum`, `cpufeatures` and the like). CI holds
+the default build to exactly that list with `cargo tree`, so a new dependency is a reviewed
+change to the allow-list rather than an accident. `blake3` compiles its assembly and C
+SIMD kernels with the `cc` crate at build time, so a C compiler must be on the host, as it
+already is for the `rustls` build's `ring`.
+
+An air-gapped host needs those crates before `--offline` works, and cargo resolves optional
+dependencies too, so the lockfile's TLS entries need the registry index even when the
+`rustls` feature is off. Either copy the registry from a connected host (run
+`cargo fetch --locked` there and carry `~/.cargo/registry` across), or use a
+`cargo vendor` directory. Then `cargo build --release --offline --locked` works as above.
+The `rustls` build adds rustls and ring, the one thing the standard library does not have,
+and is the one to ship where buckets live behind HTTPS.
+
+## Hardware acceleration
+
+`sha2`, `aes` and `blake3` pick their CPU paths at run time: SHA-NI and AES-NI on x86-64,
+the ARMv8 SHA-2 and AES instructions on ARM64, and SSE4.1, AVX2 or AVX-512 (NEON on ARM64)
+for BLAKE3, with portable code where the CPU has none of them. `rcp version` reports what
+SHA-256 found. `RCP_NO_SHA_NI` and `RCP_NO_AES_NI`, which used to force rcp's own portable
+code, are still accepted and have no effect: the crates' selection cannot be overridden at
+run time.
 
 ## Choosing endpoints
 

@@ -78,8 +78,11 @@ which an on-path party could get more simply by dropping the connection. It is o
 over every byte where nothing asked for one. `FSCTL_VALIDATE_NEGOTIATE_INFO`, which would
 also protect the negotiate's other fields, is not implemented.
 
-Signing runs on AES-NI where the CPU has it (`RCP_NO_AES_NI` forces the portable cipher).
-Measured on 1 MiB: **100 MB/s portable, 1333 MB/s on AES-NI**. That is the MAC alone. A
+Signing uses the RustCrypto `aes` and `cmac` crates, and `hmac` with `sha2` for the 2.x
+dialects. `aes` runs on AES-NI (or the ARMv8 AES instructions) where the CPU has them and on
+a constant-time software cipher otherwise. Measured on 1 MiB with AES-NI: about
+**1.7 GB/s**. That is the MAC alone. `RCP_NO_AES_NI`, which used to force rcp's own
+portable cipher, is still accepted and has no effect. A
 signed write copies its payload four times on the way to the socket, and a call-shaped
 benchmark of that path ran at about **1019 MB/s**, which is below the 1250 MB/s a 10 GbE
 link carries. The signatures are pinned to vectors computed by an independent

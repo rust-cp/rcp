@@ -1,5 +1,5 @@
 //! The LZ4 block format (Collet; lz4.org/lz4_Block_format), compressor and decompressor,
-//! here so `-compress` on the ssh transport needs no crates.io access. The compressor is
+//! here so `-compress` on the ssh transport needs no compression crate. The compressor is
 //! the greedy hash-chain-free matcher of the reference "fast" mode: a 4-byte hash table
 //! over 12-bit positions, one candidate per hash, matches extended forward. Output is a
 //! standard block: another LZ4 implementation decompresses it, and this decompressor

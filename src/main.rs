@@ -4302,17 +4302,12 @@ fn main() -> ExitCode {
                     Err(e) => format!("unavailable: {e}"),
                 }
             );
+            say!("blake3: the blake3 crate, SIMD kernel chosen at run time");
             say!(
-                "blake3: portable, chunks over up to {} threads",
-                std::thread::available_parallelism()
-                    .map(|n| n.get())
-                    .unwrap_or(1)
-                    .min(8)
-            );
-            say!(
-                "sha256: {}",
+                "sha256: the sha2 crate, {}",
                 match rcp::sha256::backend() {
                     rcp::sha256::Backend::HardwareShaNi => "hardware (SHA-NI)",
+                    rcp::sha256::Backend::HardwareArmSha2 => "hardware (ARMv8 SHA-2)",
                     rcp::sha256::Backend::Portable => "portable",
                 }
             );

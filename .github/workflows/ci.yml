@@ -93,9 +93,10 @@ jobs:
           # a Kerberos arm without its KDC fails instead of reporting ok
           RCP_REQUIRE_KDC: "1"
 
-  # The default build must stay free of third-party crates: that is what lets it build offline.
-  dependency-free:
-    name: dependency-free
+  # The default build compiles only the approved cryptography crates and their support
+  # crates, on every target: scripts/allowed-dependencies.txt is the whole list.
+  dependency-allowlist:
+    name: dependency-allowlist
     runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -103,9 +104,12 @@ jobs:
           persist-credentials: false
       - run: rustup toolchain install stable --profile minimal --component clippy && rustup default stable
       - run: |
-          deps=$(cargo tree --locked -e normal --prefix none | sort -u)
-          version=$(sed -n 's/^version = "\(.*\)"/\1/p' Cargo.toml | head -1)
-          [ "$deps" = "rcp v$version ($PWD)" ] || { printf 'the default build pulls in:\n%s\n' "$deps" >&2; exit 1; }
+          allowed=$(grep -v '^#' scripts/allowed-dependencies.txt | sed '/^$/d' | sort -u)
+          deps=$(cargo tree --locked -e normal,build --target all --prefix none \
+            | sed 's/ (\*)$//' | awk '$1 != "rcp" {print $1}' | sort -u)
+          extra=$(comm -23 <(printf '%s\n' "$deps") <(printf '%s\n' "$allowed"))
+          [ -z "$extra" ] || { printf 'the default build pulls in crates not in scripts/allowed-dependencies.txt:\n%s\n' "$extra" >&2; exit 1; }
+          printf 'default build crates (%s), all allowed:\n%s\n' "$(printf '%s\n' "$deps" | wc -l)" "$deps"
 
   features:
     name: features
@@ -232,7 +236,7 @@ jobs:
   ci-success:
     name: ci
     if: always()
-    needs: [fmt, clippy, test, dependency-free, features, msrv, docs, deny, vet, zizmor]
+    needs: [fmt, clippy, test, dependency-allowlist, features, msrv, docs, deny, vet, zizmor]
     runs-on: ubuntu-24.04
     steps:
       - if: contains(needs.*.result, 'failure') || contains(needs.*.result, 'cancelled')

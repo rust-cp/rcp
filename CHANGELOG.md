@@ -6,6 +6,19 @@ All notable changes to this project are documented here. The format follows
 
 ## [Unreleased]
 
+### Changed
+
+- Cryptography comes from audited open-source crates instead of rcp's own code: SHA-256
+  and HMAC from RustCrypto `sha2` and `hmac`, NTLM's MD4 and MD5 from `md4` and `md-5`,
+  SMB signing from `aes` and `cmac`, and BLAKE3 from the official `blake3` crate. The
+  default build now compiles those crates and their support crates, and nothing else from
+  crates.io. Digests and signatures are unchanged; BLAKE3 is about twice as fast per core.
+
+### Deprecated
+
+- `RCP_NO_SHA_NI` and `RCP_NO_AES_NI` are accepted and have no effect. The crates choose
+  their hardware paths at run time and cannot be overridden.
+
 ## [0.1.1] - 2026-10-17
 
 ### Changed

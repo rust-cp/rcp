@@ -1384,8 +1384,8 @@ fn ntlmssp_challenge(blob: &[u8]) -> io::Result<([u8; 8], Vec<u8>)> {
 
 /// Eight bytes from the OS random source, for the NTLMv2 client challenge.
 ///
-/// `/dev/urandom` rather than a crate, for the same reason every other primitive in this
-/// module is hand-rolled: `rcp` has no dependencies. If it cannot be read -- which on Linux
+/// `/dev/urandom` (`BCryptGenRandom` on Windows), the OS source a random crate would read
+/// anyway. If it cannot be read -- which on Linux
 /// means something is badly wrong -- this REFUSES rather than falling back to the clock. A
 /// silent downgrade from "unpredictable" to "derivable from a timestamp" is precisely the
 /// kind of failure nobody would notice, and a login that errors is recoverable in a way a

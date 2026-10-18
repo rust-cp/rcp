@@ -2,9 +2,9 @@
 //! `libgssapi`), loaded at run time with `dlopen`. That is the same library the kernel's
 //! `rpc.gssd`, `mount.nfs`, `curl` and every Hadoop client use, so it reads the host's
 //! `krb5.conf`, ticket cache (`KRB5CCNAME`, after `kinit`) and keytabs (`KRB5_KTNAME`)
-//! exactly as they do, and rcp carries no Kerberos code of its own. The default build stays
-//! dependency-free: a host without the library gets a clear refusal when Kerberos is asked
-//! for, and nothing else changes.
+//! exactly as they do, and rcp carries no Kerberos code of its own and links no Kerberos
+//! library: a host without the library gets a clear refusal when Kerberos is asked for, and
+//! nothing else changes.
 //!
 //! Two callers: RPCSEC_GSS in `nfs::rpc` (context tokens, MICs over headers, wrapped
 //! bodies) and SPNEGO for WebHDFS in `hdfs::client` (one token in an `Authorization`

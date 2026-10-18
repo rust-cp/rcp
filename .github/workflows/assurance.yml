@@ -1,0 +1,82 @@
+# Evidence that is not a pass/fail of the code itself: how much of it the tests reach, and
+# whether the release build reproduces bit for bit. Test results are gated by CI; these jobs
+# gate their own thresholds.
+name: Assurance
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+  schedule:
+    - cron: "23 5 * * 2"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+env:
+  CARGO_TERM_COLOR: always
+  CARGO_INCREMENTAL: 0
+
+jobs:
+  coverage:
+    name: coverage
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - run: rustup toolchain install stable --profile minimal --component llvm-tools-preview && rustup default stable
+      - name: Test peers
+        run: |
+          sudo apt-get update -qq
+          sudo DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
+            zstd krb5-kdc krb5-admin-server krb5-user libgssapi-krb5-2
+          python3 -m pip install --user --require-hashes -r tests/support/requirements.txt
+      - run: scripts/install-ci-tool.sh cargo-llvm-cov
+      # Instrumented binaries run slower, so a timing-sensitive arm can miss its bound here;
+      # whether the tests pass is the CI test job's to decide. This job decides the coverage.
+      - name: Line coverage of the test suite (at least 80%)
+        run: |
+          cargo llvm-cov --locked --features rustls --ignore-run-fail --summary-only \
+            --fail-under-lines 80 | tee coverage-summary.txt
+          {
+            echo '### Test coverage'
+            echo
+            echo '```'
+            tail -1 coverage-summary.txt
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: coverage-summary
+          path: coverage-summary.txt
+          retention-days: 30
+
+  reproducible:
+    name: reproducible
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      # The release build, twice, in fresh containers of the digest-pinned builder with
+      # different target directories; the two binaries must be identical.
+      - name: Build the release binary twice and compare
+        run: |
+          for run in one two; do
+            mkdir -p "$RUNNER_TEMP/$run"
+            docker run --rm --mount "type=bind,source=$PWD,target=/src,readonly" \
+              --mount "type=bind,source=$RUNNER_TEMP/$run,target=/output" -w /src \
+              --env CARGO_TARGET_DIR="/tmp/rcp-target-$run" \
+              docker.io/library/rust@sha256:ba3a8b9eb24de14c1879efe8acff7d4eb747723ca957e0d2409d0bc2ea9f84a7 \
+              bash -c 'set -euo pipefail; bash scripts/build-gnu.sh /output'
+          done
+          sha256sum "$RUNNER_TEMP/one/rcp" "$RUNNER_TEMP/two/rcp" | tee -a "$GITHUB_STEP_SUMMARY"
+          cmp "$RUNNER_TEMP/one/rcp" "$RUNNER_TEMP/two/rcp"

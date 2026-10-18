@@ -6,9 +6,17 @@ All notable changes to this project are documented here. The format follows
 
 ## [Unreleased]
 
+## [0.1.2] - 2026-10-18
+
+### Added
+
+- Tags made by the manual `Release` run are signed keylessly with gitsign under the
+  release workflow's identity on `main`, starting with this release. `docs/src/releases.md`
+  shows how to verify one with `gitsign verify-tag`.
+
 ### Changed
 
-- Cryptography comes from audited open-source crates instead of rcp's own code: SHA-256
+- Cryptography comes from widely used open-source crates instead of rcp's own code: SHA-256
   and HMAC from RustCrypto `sha2` and `hmac`, NTLM's MD4 and MD5 from `md4` and `md-5`,
   SMB signing from `aes` and `cmac`, and BLAKE3 from the official `blake3` crate. The
   default build now compiles those crates and their support crates, and nothing else from
@@ -18,6 +26,13 @@ All notable changes to this project are documented here. The format follows
 
 - `RCP_NO_SHA_NI` and `RCP_NO_AES_NI` are accepted and have no effect. The crates choose
   their hardware paths at run time and cannot be overridden.
+
+### Fixed
+
+- Skipping certificate verification no longer prints `WARN: -s3.noverify` for every
+  endpoint. The warning, and the missing-CA-bundle hint, name the option that turned
+  verification off: `-dav.noverify`, `-http.noverify`, `-oci.noverify` or `-s3.noverify`
+  (HDFS follows `-s3.noverify`).
 
 ## [0.1.1] - 2026-10-17
 

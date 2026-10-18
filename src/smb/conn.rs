@@ -784,10 +784,10 @@ impl Conn {
             .set_read_timeout(Some(left.max(Duration::from_millis(1))))
     }
 
-    /// Whether the server has closed this connection, or left bytes on it nobody asked for,
-    /// without blocking: a zero-length peek is the FIN. Either way the connection is not one
-    /// to send a credential on.
-    fn closed_by_peer(&self) -> io::Result<bool> {
+    /// Refuses, by name, when the server has closed this connection or left bytes on it
+    /// nobody asked for, without blocking: a zero-length peek is the FIN. Either way the
+    /// connection is not one to send a credential on.
+    fn refuse_if_closed_by_peer(&self) -> io::Result<()> {
         self.sock.set_nonblocking(true)?;
         let mut b = [0u8; 1];
         let seen = loop {
@@ -801,7 +801,17 @@ impl Conn {
         self.sock.set_nonblocking(false)?;
         // Only "nothing to read yet" means open: a FIN, unasked bytes or an error all mean
         // closed.
-        Ok(!matches!(seen, Err(e) if e.kind() == io::ErrorKind::WouldBlock))
+        match seen {
+            Err(e) if e.kind() == io::ErrorKind::WouldBlock => Ok(()),
+            _ => Err(io::Error::new(
+                io::ErrorKind::UnexpectedEof,
+                format!(
+                    "{}: the server closed the connection, or sent something unasked, before the credential was sent; \
+                     nothing was offered",
+                    self.server
+                ),
+            )),
+        }
     }
 
     /// `login`, calling `offer` once the credential is ready to go on the wire.
@@ -862,16 +872,7 @@ impl Conn {
         // from the response is what that server accepts; whether Windows would refuse the
         // signed form too is not measured.
         offer()?;
-        if self.closed_by_peer()? {
-            return Err(io::Error::new(
-                io::ErrorKind::UnexpectedEof,
-                format!(
-                    "{}: the server closed the connection, or sent something unasked, before the credential was sent; \
-                     nothing was offered",
-                    self.server
-                ),
-            ));
-        }
+        self.refuse_if_closed_by_peer()?;
         // The clock restarts HERE, where the budget slot is held: it bounds how long an offer
         // can be in flight, which is what the workers queued in `reserve` are waiting on. Left
         // running from the dial, a worker that queued past it would send its credential and

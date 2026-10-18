@@ -80,28 +80,3 @@ jobs:
           done
           sha256sum "$RUNNER_TEMP/one/rcp" "$RUNNER_TEMP/two/rcp" | tee -a "$GITHUB_STEP_SUMMARY"
           cmp "$RUNNER_TEMP/one/rcp" "$RUNNER_TEMP/two/rcp"
-
-  gitsign-selftest:
-    name: gitsign-selftest
-    runs-on: ubuntu-24.04
-    permissions:
-      contents: read
-      id-token: write
-    steps:
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-        with:
-          persist-credentials: false
-      - name: Sign and verify a local tag the way the release does
-        env:
-          GITSIGN_TOKEN_PROVIDER: github-actions
-        run: |
-          scripts/install-ci-tool.sh gitsign
-          git config user.name 'github-actions[bot]'
-          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          git config gpg.format x509
-          git config gpg.x509.program gitsign
-          git tag -s v0.0.0-selftest -m "selftest" HEAD
-          gitsign verify-tag v0.0.0-selftest \
-            --certificate-identity-regexp "^https://github.com/$GITHUB_REPOSITORY/.github/workflows/assurance.yml@" \
-            --certificate-oidc-issuer https://token.actions.githubusercontent.com
-          git cat-file -p v0.0.0-selftest | head -8

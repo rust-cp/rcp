@@ -53,6 +53,11 @@ case "$tool" in
     version=v8.30.1
     url=https://github.com/gitleaks/gitleaks/releases/download/$version/gitleaks_${version#v}_linux_x64.tar.gz
     sha=551f6fc83ea457d62a0d98237cbad105af8d557003051f41f3e7ca7b3f2470eb ;;
+  cargo-llvm-cov)
+    # renovate: datasource=github-releases depName=taiki-e/cargo-llvm-cov
+    version=v0.9.1
+    url=https://github.com/taiki-e/cargo-llvm-cov/releases/download/$version/cargo-llvm-cov-x86_64-unknown-linux-musl.tar.gz
+    sha=3fca950394a3c49457657c158b1619cec8dfd2647ae5b48746734c0ab969a522 ;;
   shellcheck)
     # renovate: datasource=github-releases depName=koalaman/shellcheck
     version=v0.11.0

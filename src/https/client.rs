@@ -96,7 +96,10 @@ impl HttpsTree {
             idle: Mutex::new(BTreeMap::new()),
             #[cfg(feature = "rustls")]
             tls: if scheme == Scheme::Https {
-                Some(crate::net::tls::config(settings.noverify)?)
+                Some(crate::net::tls::config(
+                    settings.noverify,
+                    crate::net::tls::HTTP_NOVERIFY,
+                )?)
             } else {
                 None
             },

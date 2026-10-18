@@ -144,11 +144,14 @@ its job has only `uses:` steps, and any extra reporting goes in a separate job.
    `[0.2.0]` with today's date, sets the version in `Cargo.toml` and `Cargo.lock`, and
    commits `chore: release 0.2.0` on a new branch `release/v0.2.0`. It refuses a dirty tree,
    an empty `Unreleased`, and a version that is not above the current one.
-2. Push that branch, open a pull request, and merge it. Then `scripts/release.sh tag 0.2.0`
-   checks that `origin/main` carries the version and the dated section, and makes the
-   annotated tag `v0.2.0` on it. `git push origin v0.2.0` publishes. Where pushing a tag is
-   not possible, run the `Release` workflow by hand on `main` with the version instead: it
-   makes the same checks, creates the tag on that commit, and publishes in the same run.
+2. Push that branch, open a pull request, and merge it. Then run the `Release` workflow by
+   hand on `main` with the version (`gh workflow run release.yml -f version=0.2.0`). It makes
+   the same checks as `scripts/release.sh check`, creates the tag `v0.2.0` on that commit,
+   **signs it keylessly with gitsign** under the workflow's own identity, and publishes in
+   the same run. This is the normal path, because it is the one that produces a signed tag.
+   `scripts/release.sh tag 0.2.0` followed by `git push origin v0.2.0` still works, but makes
+   an unsigned annotated tag: signing it locally with gitsign would put the maintainer's
+   personal e-mail address in a public transparency-log certificate.
 3. The release workflow requires the real Kerberos tests, then builds the GNU/Linux binary
    with system GNU libc linkage and publishes a GitHub release with checksums, an SPDX
    bill of materials, and the matching `CHANGELOG.md` section as notes. The archive

@@ -305,7 +305,10 @@ pub fn resolve(bucket: &str, opts: &S3Options) -> io::Result<Resolved> {
     };
     #[cfg(feature = "rustls")]
     let tls = if scheme == Scheme::Https {
-        Some(crate::net::tls::config(opts.noverify)?)
+        Some(crate::net::tls::config(
+            opts.noverify,
+            crate::net::tls::S3_NOVERIFY,
+        )?)
     } else {
         None
     };

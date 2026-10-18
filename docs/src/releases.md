@@ -22,9 +22,9 @@ install -m 755 rcp-vX.Y.Z-x86_64-unknown-linux-gnu/rcp "$HOME/.local/bin/rcp"
 
 Create `$HOME/.local/bin` first if needed and ensure it is on `PATH`.
 
-`scripts/release.sh` (see the repository's `CONTRIBUTING.md`) prepares the version bump
-and tag. Running the workflow by hand on `main` with a version checks the release,
-creates the tag and publishes in one run.
+`scripts/release.sh` (see the repository's `CONTRIBUTING.md`) prepares the version bump.
+Running the workflow by hand on `main` with a version checks the release, creates the tag,
+signs it, and publishes in one run.
 
 ## Signatures and provenance
 
@@ -44,6 +44,23 @@ cosign verify-blob rcp-vX.Y.Z-x86_64-unknown-linux-gnu.tar.gz \
   --certificate-oidc-issuer https://token.actions.githubusercontent.com
 gh attestation verify rcp-vX.Y.Z-x86_64-unknown-linux-gnu.tar.gz --repo rust-cp/rcp
 ```
+
+### Signed tags
+
+Tags made by the release workflow (from 0.1.2 on) are signed keylessly with
+[gitsign](https://github.com/sigstore/gitsign) under the workflow's identity on `main`. To
+verify one, with `gitsign` installed:
+
+```sh
+git fetch --tags https://github.com/rust-cp/rcp
+gitsign verify-tag vX.Y.Z \
+  --certificate-identity https://github.com/rust-cp/rcp/.github/workflows/release.yml@refs/heads/main \
+  --certificate-oidc-issuer https://token.actions.githubusercontent.com
+```
+
+GitHub's web interface shows these tags as unverified, because it does not check Sigstore
+signatures; `gitsign verify-tag` is the check. `v0.1.1` predates this and is an unsigned
+annotated tag; its release assets are signed as described above.
 
 ## Container image and registry artifacts
 
@@ -66,6 +83,8 @@ and signed the same way. `scripts/publish.sh [REGISTRY/REPO] [TAG]` performs tha
 with [oras](https://oras.land): one layer for the binary, one for `SHA256SUMS`, and
 manifest annotations recording the repository, commit, dirty-tree flag, rustc version,
 target, build time and binary SHA-256.
+
+Both packages are public, so no login is needed to pull them.
 
 ```sh
 oras pull ghcr.io/rust-cp/rcp-binary@sha256:<digest>

@@ -33,6 +33,8 @@ read-only.
 | tar archives, including gzip, zstd, and sparse members | `tar:///path/archive.tar.gz` |
 
 TLS (`https://`, `davs://`, `rcps://`, and TLS S3) needs a build with `--features rustls`.
+The release archive and container image include it; a source build without the feature
+refuses TLS endpoints by name.
 
 ## Install
 
@@ -50,6 +52,23 @@ runtime Cargo graph of that binary. The same document is packed inside the archi
 `SBOM.spdx.json`. Each archive is signed with Sigstore (`*.tar.gz.sigstore.json`), and the
 release carries SLSA build provenance (`rcp.intoto.jsonl` and its Sigstore bundle
 `rcp.sigstore.json`). The [releases guide](docs/src/releases.md) shows how to verify them.
+
+### Container image
+
+The signed runtime image is public; it runs as UID 10001 and keeps its catalog in `/state`:
+
+```sh
+docker pull ghcr.io/rust-cp/rcp:X.Y.Z
+docker run --rm --read-only --cap-drop ALL --security-opt no-new-privileges \
+  --tmpfs /tmp:rw,noexec,nosuid,nodev,size=16m \
+  --mount type=volume,source=rcp-state,target=/state \
+  --mount type=bind,source=/data,target=/data,readonly \
+  --mount type=bind,source=/backup,target=/backup \
+  ghcr.io/rust-cp/rcp:X.Y.Z copy -noown /data /backup
+```
+
+The [install guide](docs/src/install.md#container-image) covers verification, permissions
+and the bare binary at `ghcr.io/rust-cp/rcp-binary`.
 
 The release binary runs on x86-64 GNU/Linux with glibc 2.34 or newer, which includes
 RHEL 9. Each release is checked against that limit at build time and run on UBI 9

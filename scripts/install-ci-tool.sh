@@ -58,6 +58,12 @@ case "$tool" in
     version=v0.9.1
     url=https://github.com/taiki-e/cargo-llvm-cov/releases/download/$version/cargo-llvm-cov-x86_64-unknown-linux-musl.tar.gz
     sha=3fca950394a3c49457657c158b1619cec8dfd2647ae5b48746734c0ab969a522 ;;
+  gitsign)
+    # A single binary, not an archive.
+    # renovate: datasource=github-releases depName=sigstore/gitsign
+    version=v0.17.1
+    url=https://github.com/sigstore/gitsign/releases/download/$version/gitsign_${version#v}_linux_amd64
+    sha=69213a8a0813a151e5a47d0060862952ff833a845d57309dff76f7ba6600abae ;;
   shellcheck)
     # renovate: datasource=github-releases depName=koalaman/shellcheck
     version=v0.11.0
@@ -68,11 +74,15 @@ esac
 
 work=$(mktemp -d)
 trap 'rm -rf "$work"' EXIT
-curl --proto '=https' --tlsv1.2 -sSfL -o "$work/archive.tar.gz" "$url"
-echo "$sha  $work/archive.tar.gz" | sha256sum --check --quiet
-tar -xzf "$work/archive.tar.gz" -C "$work"
+curl --proto '=https' --tlsv1.2 -sSfL -o "$work/download" "$url"
+echo "$sha  $work/download" | sha256sum --check --quiet
 mkdir -p "$dest"
-find "$work" -type f -name "$tool" -perm -u+x -exec install -m 0755 {} "$dest/$tool" \;
+case "$url" in
+  *.tar.gz)
+    tar -xzf "$work/download" -C "$work"
+    find "$work" -type f -name "$tool" -perm -u+x -exec install -m 0755 {} "$dest/$tool" \; ;;
+  *) install -m 0755 "$work/download" "$dest/$tool" ;;
+esac
 # Cargo subcommands are invoked with their subcommand name first, as cargo would.
 case "$tool" in
   cargo-*) "$dest/$tool" "${tool#cargo-}" --version ;;

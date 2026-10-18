@@ -3,7 +3,7 @@
   "dataLicense": "CC0-1.0",
   "SPDXID": "SPDXRef-DOCUMENT",
   "name": "rcp-0.1.1",
-  "documentNamespace": "https://github.com/rust-cp/rcp/spdx/0.1.1/4b05ed1347ddb1a7",
+  "documentNamespace": "https://github.com/rust-cp/rcp/spdx/0.1.1/da1508be36b384de",
   "creationInfo": {
     "created": "2026-10-14T00:00:00Z",
     "creators": [
@@ -32,8 +32,8 @@
     {
       "SPDXID": "SPDXRef-Package-1",
       "name": "aes",
-      "versionInfo": "0.9.3",
-      "downloadLocation": "https://crates.io/crates/aes/0.9.3",
+      "versionInfo": "0.9.2",
+      "downloadLocation": "https://crates.io/crates/aes/0.9.2",
       "filesAnalyzed": false,
       "licenseDeclared": "MIT OR Apache-2.0",
       "licenseConcluded": "NOASSERTION",
@@ -43,13 +43,13 @@
         {
           "referenceCategory": "PACKAGE-MANAGER",
           "referenceType": "purl",
-          "referenceLocator": "pkg:cargo/aes@0.9.3"
+          "referenceLocator": "pkg:cargo/aes@0.9.2"
         }
       ],
       "checksums": [
         {
           "algorithm": "SHA256",
-          "checksumValue": "35f0f96ce78e38c3dc6d8948aa8163d06385be74000f3c7a95bf1eef35d3ea32"
+          "checksumValue": "f8eb277bec05f56a0e0591f155a484cbd0f4f07ff2905051a48c72f004f7ed58"
         }
       ]
     },
@@ -704,8 +704,8 @@
     {
       "SPDXID": "SPDXRef-Package-29",
       "name": "sha2",
-      "versionInfo": "0.11.1",
-      "downloadLocation": "https://crates.io/crates/sha2/0.11.1",
+      "versionInfo": "0.11.0",
+      "downloadLocation": "https://crates.io/crates/sha2/0.11.0",
       "filesAnalyzed": false,
       "licenseDeclared": "MIT OR Apache-2.0",
       "licenseConcluded": "NOASSERTION",
@@ -715,13 +715,13 @@
         {
           "referenceCategory": "PACKAGE-MANAGER",
           "referenceType": "purl",
-          "referenceLocator": "pkg:cargo/sha2@0.11.1"
+          "referenceLocator": "pkg:cargo/sha2@0.11.0"
         }
       ],
       "checksums": [
         {
           "algorithm": "SHA256",
-          "checksumValue": "47d7069beb7d6ac7b9acd1039986e73443f24234f41074da099d6f994ac9ad19"
+          "checksumValue": "446ba717509524cb3f22f17ecc096f10f4822d76ab5c0b9822c5f9c284e825f4"
         }
       ]
     },

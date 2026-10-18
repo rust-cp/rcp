@@ -3,6 +3,9 @@ name = "rcp"
 version = "0.1.1"
 edition = "2021"
 rust-version = "1.87"
+# MSRV-aware resolution: `cargo update` (and Renovate, through it) picks the newest
+# version of each dependency that still builds on rust-version.
+resolver = "3"
 description = "A data mover with minimal dependencies: copy, verify, resume, sync and scan across local paths, NFS, S3, SMB, SFTP, WebDAV, HDFS, OCI registries and tar."
 license = "Apache-2.0"
 repository = "https://github.com/rust-cp/rcp"

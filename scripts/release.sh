@@ -2,9 +2,10 @@
 # Cut a release in two steps, each one a thing a person reviews:
 #
 #   scripts/release.sh prepare VERSION   on a clean tree: move CHANGELOG.md's [Unreleased]
-#                                        entries under [VERSION] - today, bump Cargo.toml and
-#                                        Cargo.lock, and commit "chore: release VERSION" on a
-#                                        new branch release/vVERSION, for a pull request
+#                                        entries under [VERSION] - today, bump Cargo.toml,
+#                                        both Cargo.lock files and rcp.spdx.json, and commit
+#                                        "chore: release VERSION" on a new branch
+#                                        release/vVERSION, for a pull request
 #   scripts/release.sh tag VERSION       after that pull request merges: check that
 #                                        origin/main carries VERSION in both files, then make
 #                                        the annotated tag vVERSION on it and print the push
@@ -76,9 +77,14 @@ prepare() {
     sed -i "0,/^version = \"$current\"/s//version = \"$version\"/" Cargo.toml
     cargo metadata --format-version 1 --offline >/dev/null
     [ "$(crate_version)" = "$version" ] || die "Cargo.toml still reads $(crate_version)"
+    # the fuzz workspace locks rcp by path, and the committed SBOM names the version; CI
+    # checks both with --locked
+    (cd fuzz && cargo metadata --format-version 1 --offline >/dev/null)
+    cargo metadata --locked --offline --features rustls --format-version 1 |
+        python3 scripts/spdx-sbom.py --output rcp.spdx.json
     [ -n "$(section "$version")" ] || die "the [$version] section came out empty"
 
-    git add CHANGELOG.md Cargo.toml Cargo.lock
+    git add CHANGELOG.md Cargo.toml Cargo.lock fuzz/Cargo.lock rcp.spdx.json
     git commit -q -m "chore: release $version"
     echo "release: committed on $branch:"
     git show --stat --format='  %h %s' HEAD | sed 's/^/  /'

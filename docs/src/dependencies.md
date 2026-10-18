@@ -16,7 +16,10 @@ Every external dependency is declared in a machine-readable file:
 ## Policy
 
 - **Few, and allow-listed.** rcp depends on a small set of widely used crates chosen for one
-  job each (TLS, and standard cryptographic primitives). Adding a crate needs the
+  job each (TLS, and standard cryptographic primitives: RustCrypto `sha2`, `hmac`, `md4`,
+  `md-5`, `aes` and `cmac`, and the official `blake3`). The default build's complete list,
+  support crates included, is `scripts/allowed-dependencies.txt`, and CI's
+  `dependency-allowlist` job fails on any crate not in it. Adding a crate needs the
   maintainer's approval in the pull request that adds it, with the reason, and the crate
   must pass the checks below.
 - **Licenses.** `deny.toml` allows only Apache-2.0, BSD-3-Clause, ISC and MIT; anything else

@@ -799,11 +799,9 @@ impl Conn {
         // Blocking is restored BEFORE the verdict, so an error restoring it cannot leave a
         // socket non-blocking behind an early return -- whatever this function concludes.
         self.sock.set_nonblocking(false)?;
-        match seen {
-            Err(e) if e.kind() == io::ErrorKind::WouldBlock => Ok(false),
-            Ok(_) => Ok(true),
-            Err(_) => Ok(true),
-        }
+        // Only "nothing to read yet" means open: a FIN, unasked bytes or an error all mean
+        // closed.
+        Ok(!matches!(seen, Err(e) if e.kind() == io::ErrorKind::WouldBlock))
     }
 
     /// `login`, calling `offer` once the credential is ready to go on the wire.
@@ -1390,22 +1388,33 @@ fn ntlmssp_challenge(blob: &[u8]) -> io::Result<([u8; 8], Vec<u8>)> {
 /// silent downgrade from "unpredictable" to "derivable from a timestamp" is precisely the
 /// kind of failure nobody would notice, and a login that errors is recoverable in a way a
 /// weakened session key is not.
+#[cfg(windows)]
 fn client_nonce() -> io::Result<[u8; 8]> {
-    #[cfg(unix)]
-    use std::io::Read;
     let mut n = [0u8; 8];
-    #[cfg(windows)]
     crate::windows::random(&mut n)?;
-    #[cfg(unix)]
+    Ok(n)
+}
+
+/// The Unix side reads into an empty buffer rather than overwriting a zeroed array, so no
+/// constant is ever a candidate for the challenge, and a short read is refused by length.
+#[cfg(unix)]
+fn client_nonce() -> io::Result<[u8; 8]> {
+    use std::io::Read;
+    let mut n = Vec::with_capacity(8);
     std::fs::File::open("/dev/urandom")
-        .and_then(|mut f| f.read_exact(&mut n))
+        .and_then(|f| f.take(8).read_to_end(&mut n))
         .map_err(|e| {
             io::Error::new(
                 e.kind(),
                 format!("reading /dev/urandom for the NTLM client challenge: {e}"),
             )
         })?;
-    Ok(n)
+    n.try_into().map_err(|_| {
+        io::Error::new(
+            io::ErrorKind::UnexpectedEof,
+            "reading /dev/urandom for the NTLM client challenge: fewer than 8 bytes",
+        )
+    })
 }
 
 fn ntlmssp_authenticate(

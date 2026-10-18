@@ -67,9 +67,9 @@ fn kdf_input(label: &[u8], context: &[u8]) -> Vec<u8> {
 /// 128 bits out. `label` and `context` are passed NUL-terminated -- see `kdf_input`.
 pub fn kdf(key: &[u8], label: &[u8], context: &[u8]) -> [u8; 16] {
     let full = hmac_sha256(key, &kdf_input(label, context));
-    let mut out = [0u8; 16];
-    out.copy_from_slice(&full[..16]);
-    out
+    full[..16]
+        .try_into()
+        .expect("HMAC-SHA256 output is 32 bytes")
 }
 
 /// The key this connection signs with, derived from the session key per dialect.
@@ -77,10 +77,11 @@ pub fn kdf(key: &[u8], label: &[u8], context: &[u8]) -> [u8; 16] {
 /// 0x0202 and 0x0210 sign with the session key itself. 0x0300 derives, and the label and
 /// context are exactly these strings -- `SMB2AESCMAC` and `SmbSign` -- which is the kind of
 /// constant that is either right or produces a key that fails everything.
-pub fn signing_key(session_key: &[u8], dialect: u16) -> Option<[u8; 16]> {
-    let mut k = [0u8; 16];
-    let n = session_key.len().min(16);
-    k[..n].copy_from_slice(&session_key[..n]);
+///
+/// The session key is NTLMv2's, which is always exactly 16 bytes, so the type says so and
+/// MS-SMB2's padding of a shorter key never arises.
+pub fn signing_key(session_key: &[u8; 16], dialect: u16) -> Option<[u8; 16]> {
+    let k = *session_key;
     // MATCHED EXACTLY, not with `>=`, and that is the point of this shape.
     //
     // `dialect >= 0x0300` is correct for every dialect this client currently offers and

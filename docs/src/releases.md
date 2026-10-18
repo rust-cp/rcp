@@ -37,6 +37,11 @@ GitHub identity:
   SBOM, and `rcp.sigstore.json` is the Sigstore bundle that signs it. The same
   attestation is stored with GitHub.
 
+Use cosign v3 or later for every `cosign` command on this page. The release workflow signs
+with cosign v3 and its newer Sigstore bundle format. cosign v2.6.1 still verifies the archive
+bundle below, but cosign v2.x reports "no signatures found" for the images (see
+[Container image and registry artifacts](#container-image-and-registry-artifacts)).
+
 ```sh
 cosign verify-blob rcp-vX.Y.Z-x86_64-unknown-linux-gnu.tar.gz \
   --bundle rcp-vX.Y.Z-x86_64-unknown-linux-gnu.tar.gz.sigstore.json \
@@ -66,7 +71,11 @@ annotated tag; its release assets are signed as described above.
 
 The workflow pushes the hardened runtime image (see `container/README.md`) to
 `ghcr.io/rust-cp/rcp:X.Y.Z`. The image digest is signed with cosign and carries an
-SPDX SBOM attestation and a build provenance attestation:
+SPDX SBOM attestation and a build provenance attestation. Verifying them needs cosign v3
+or later. The release workflow signs with cosign v3, which stores signatures and
+attestations in the newer Sigstore bundle format, attached to the image as OCI referrers.
+cosign v2.x looks only for the older signature tags and reports "no signatures found" for
+every published image, 0.1.1 and 0.1.2 included.
 
 ```sh
 cosign verify ghcr.io/rust-cp/rcp:X.Y.Z \

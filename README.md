@@ -68,7 +68,9 @@ docker run --rm --read-only --cap-drop ALL --security-opt no-new-privileges \
 ```
 
 The [install guide](docs/src/install.md#container-image) covers verification, permissions
-and the bare binary at `ghcr.io/rust-cp/rcp-binary`.
+and the bare binary at `ghcr.io/rust-cp/rcp-binary`. Verify the images with cosign v3 or
+later: they are signed in the newer Sigstore bundle format, and cosign v2.x reports "no
+signatures found" for them.
 
 The release binary runs on x86-64 GNU/Linux with glibc 2.34 or newer, which includes
 RHEL 9. Each release is checked against that limit at build time and run on UBI 9

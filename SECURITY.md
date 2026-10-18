@@ -19,6 +19,18 @@ Please follow coordinated disclosure: give the project a chance to publish a
 fix before describing the issue in public. You will get an acknowledgment
 within 5 working days, and a first assessment of severity and scope within 10.
 
+## How reports are handled
+
+1. **Acknowledge** the report within 5 working days, in the private advisory.
+2. **Assess** severity and scope within 10 working days, and tell the reporter the result.
+3. **Fix** in a private fork of the advisory, with a regression test, and agree a disclosure
+   date with the reporter. The default is 90 days from the report at the latest, sooner when
+   a fix is ready.
+4. **Release** the fix, publish the GitHub security advisory (requesting a CVE through
+   GitHub), and list it under a `Security` heading in that release's `CHANGELOG.md` section.
+5. **Credit** the reporter by name in the advisory and the CHANGELOG entry, unless they ask
+   to stay anonymous.
+
 ## Supported versions
 
 Fixes land on `main` and ship in the next release. Only the latest release

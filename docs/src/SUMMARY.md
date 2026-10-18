@@ -1,6 +1,7 @@
 # Summary
 
 [Introduction](introduction.md)
+[Install, upgrade and uninstall](install.md)
 
 # User guide
 
@@ -40,3 +41,5 @@
 - [Platform validation](portability.md)
 - [Releases](releases.md)
 - [Telemetry](telemetry.md)
+- [Security requirements and assurance case](security.md)
+- [External dependencies](dependencies.md)

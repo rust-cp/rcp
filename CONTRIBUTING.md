@@ -28,6 +28,28 @@ New features must come with tests in the automated test suite (`cargo test`), an
 comes with a test that fails without the fix. A pull request that changes behavior without a
 test is not ready to merge.
 
+### Coding standards
+
+Rust code follows the [Rust Style Guide](https://doc.rust-lang.org/style-guide/) as
+implemented by `rustfmt` with its default settings, and the
+[Rust API Guidelines](https://rust-lang.github.io/api-guidelines/) for public items. Clippy's
+default lints are the project's lint set, with warnings treated as errors. CI enforces both:
+`cargo fmt --all --check`, and Clippy with `-D warnings` on every feature combination and on
+the minimum supported Rust version. An exception is an `#[allow]` or `#[expect]` on the
+smallest item it applies to, with a comment saying why. Workflows must pass `actionlint`
+and `zizmor`, which CI runs.
+
+### Contribution terms
+
+By opening a pull request you certify the [Developer Certificate of Origin
+1.1](https://developercertificate.org/): the contribution is your own work, or you have the
+right to submit it, and you submit it under the project's license (Apache-2.0, whose
+section 5 makes a contribution licensed on those terms unless you say otherwise). A
+`Signed-off-by` line is welcome but not required.
+
+See [GOVERNANCE.md](GOVERNANCE.md) for how decisions are made and who holds which role, and
+[ROADMAP.md](ROADMAP.md) for where the project is heading.
+
 ## Before you push
 
 ```sh

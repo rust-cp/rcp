@@ -1,7 +1,8 @@
 # rcp
 
 A data mover for local paths, NFS exports, S3 buckets and HDFS, distributed under the
-Apache-2.0 license. The default build compiles no third-party Rust crates; the release
+Apache-2.0 license. The default build uses audited open-source cryptography crates
+(RustCrypto and the official BLAKE3) and otherwise only its own code; the release
 binary includes TLS support and uses the host's GNU libc. There is no bundled interpreter
 or telemetry.
 

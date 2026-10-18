@@ -19,7 +19,6 @@
 //! mandatory`, at each of the three dialects, and it is recorded in the README rather than
 //! here because it cannot be re-run from a unit arm. No Windows server was contacted.
 
-pub mod aes_ni;
 pub mod client;
 pub mod conn;
 pub mod ntlm;

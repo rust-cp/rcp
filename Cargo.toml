@@ -3,7 +3,10 @@ name = "rcp"
 version = "0.1.1"
 edition = "2021"
 rust-version = "1.87"
-description = "A dependency-free data mover: copy, verify, resume, sync and scan across local paths, NFS, S3, SMB, SFTP, WebDAV, HDFS, OCI registries and tar."
+# MSRV-aware resolution: `cargo update` (and Renovate, through it) picks the newest
+# version of each dependency that still builds on rust-version.
+resolver = "3"
+description = "A data mover with minimal dependencies: copy, verify, resume, sync and scan across local paths, NFS, S3, SMB, SFTP, WebDAV, HDFS, OCI registries and tar."
 license = "Apache-2.0"
 repository = "https://github.com/rust-cp/rcp"
 homepage = "https://rust-cp.github.io/rcp/"
@@ -14,15 +17,23 @@ categories = ["command-line-utilities", "filesystem", "network-programming"]
 publish = false
 exclude = ["/.github", "/bench", "/docs", "/scripts", "/fuzz", "/rcp.spdx.json"]
 
-# The default build compiles no third-party crates. Offline builds still need cached
-# registry metadata for the optional TLS dependencies; see docs/src/building.md.
+# The default build's only third-party crates are audited open-source cryptography: the
+# RustCrypto hashes, MACs and AES, and the official BLAKE3. Everything else is written here.
+# An offline build needs them, and the optional TLS dependencies, in the local cargo
+# registry or a vendor directory; see docs/src/building.md.
 [dependencies]
+aes = "0.9"
+blake3 = { version = "1.8", default-features = false, features = ["std"] }
+cmac = "0.8"
+hmac = "0.13"
+md4 = "0.11"
+md5 = { package = "md-5", version = "0.11" }
+sha2 = "0.11"
 rustls = { version = "0.23", default-features = false, features = ["ring", "std", "tls12"], optional = true }
 
 [features]
-# Every endpoint is a feature, and all of them are on by default. None adds a dependency, so
-# the default build stays offline-buildable; turning one off leaves its adapter out of the
-# binary, and a URL for it is refused by name.
+# Every endpoint is a feature, and all of them are on by default. None adds a dependency;
+# turning one off leaves its adapter out of the binary, and a URL for it is refused by name.
 default = ["nfs", "s3", "smb", "sftp", "remote", "dav", "hdfs", "https", "oci", "tar"]
 # nfs:// -- NFSv3 and NFSv4.0, with NFSACL, v4 ACLs and Kerberos; also `rcp show HOST`.
 nfs = []

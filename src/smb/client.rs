@@ -292,7 +292,7 @@ impl CredentialBudget {
     /// a directory this client does not have, so the domain is dropped rather than guessed:
     /// two different domains' `alice`s then share a budget, which only tightens the bound.
     /// Not handled: Unicode normalization (`é` precomposed versus `e` plus a combining
-    /// accent), which needs tables this dependency-free crate does not carry.
+    /// accent), which needs Unicode tables this crate does not carry.
     fn for_account(user: &str) -> Arc<CredentialBudget> {
         use std::collections::HashMap;
         use std::sync::OnceLock;

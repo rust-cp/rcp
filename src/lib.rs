@@ -1,7 +1,9 @@
 //! rcp (Rust copy): a general-purpose data mover for local paths, NFS exports and S3
 //! buckets, distributed under Apache-2.0, with no bundled interpreter or telemetry.
 //!
-//! The default build compiles no third-party Rust crates. Enable `rustls` for TLS and
+//! The default build's only third-party crates are audited open-source cryptography (the
+//! RustCrypto `sha2`, `hmac`, `md4`, `md-5`, `aes` and `cmac` crates, and the official
+//! `blake3`). Enable `rustls` for TLS and
 //! `system-zstd` to use the system compression library. Endpoint modules are controlled
 //! by their corresponding Cargo features; parsing an [`Endpoint`] does not open it or
 //! check that its transport was enabled. GNU/Linux release binaries dynamically link

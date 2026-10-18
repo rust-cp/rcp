@@ -9,7 +9,9 @@ network storage, records every transfer in a catalog, and sends no telemetry.
 A copy is content-defined: each file is hashed (SHA-256, using SHA-NI when the CPU has
 it), the catalog keeps that record, and a later `sync` or `resume` moves only what the
 record says is still missing. The default local engine uses `io_uring` on Linux. The
-default build compiles no third-party crate.
+default build's only third-party crates are audited open-source cryptography (the
+RustCrypto hashes, MACs and AES, and the official BLAKE3); everything else is rcp's own
+code.
 
 ## Endpoints
 
@@ -79,19 +81,20 @@ includes the licenses of the bundled Rust dependencies.
 Rust 1.87 or newer:
 
 ```sh
-cargo build --release                    # compiles no third-party crate
+cargo build --release                    # third-party crates: crypto only
 cargo build --release --features rustls  # adds TLS
 ```
 
 | Feature | Default | Adds |
 | --- | --- | --- |
-| `nfs`, `s3`, `smb`, `sftp`, `remote`, `dav`, `hdfs`, `https`, `oci`, `tar` | yes | One endpoint each. `remote` is `ssh://`, `rcp://`, and `rcp serve`. None pulls in a crate. |
-| `rustls` | no | TLS through rustls. The only feature that pulls in crates. |
+| `nfs`, `s3`, `smb`, `sftp`, `remote`, `dav`, `hdfs`, `https`, `oci`, `tar` | yes | One endpoint each. `remote` is `ssh://`, `rcp://`, and `rcp serve`. None adds a crate. |
+| `rustls` | no | TLS through rustls and ring. The only feature that adds crates. |
 | `system-zstd` | no | The `ssh://` stream's zstd through the system libzstd instead of the built-in codec. Implies `remote`. |
 
-CI enforces that the default build compiles no third-party crate. An offline host still
-needs cached registry metadata for Cargo to resolve optional TLS dependencies; see the
-[offline build instructions](docs/src/building.md). To leave endpoints out, name the ones
+CI enforces that the default build compiles only the approved cryptography crates:
+`sha2`, `hmac`, `md4`, `md-5`, `aes`, `cmac` and `blake3`, and the support crates they
+need. An offline host needs those crates, and the optional TLS dependencies, in its cargo
+registry or a vendor directory; see the [offline build instructions](docs/src/building.md). To leave endpoints out, name the ones
 to keep:
 
 ```sh

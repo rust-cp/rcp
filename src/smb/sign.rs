@@ -1,5 +1,7 @@
-//! SMB2 message signing: AES-128, AES-CMAC, the SP800-108 key derivation, and the two
-//! signing algorithms the dialects this client offers actually use.
+//! SMB2 message signing: AES-128-CMAC, the SP800-108 key derivation, and the two signing
+//! algorithms the dialects this client offers actually use. The block cipher and the MAC
+//! come from the RustCrypto `aes` and `cmac` crates; `aes` uses AES-NI (x86) or the ARMv8
+//! AES instructions where the CPU has them and a constant-time software cipher otherwise.
 //!
 //! **Why this exists.** Windows 11 24H2, Windows Server 2025 and any domain-member Samba
 //! require signing by default. A client that reads the "signing required" bit and refuses by
@@ -17,203 +19,22 @@
 //! SP800-108 counter-mode KDF rather than using it directly.
 //!
 //! Everything here is checked against published vectors -- FIPS-197 for the AES block,
-//! RFC 4493 for CMAC -- because a signing implementation that is subtly wrong does not
-//! fail loudly: the server rejects every request with `STATUS_ACCESS_DENIED`, which reads
-//! exactly like a credential problem and sends you to look at the password.
+//! RFC 4493 for CMAC, and signatures from an independent implementation -- because a
+//! signing path that is subtly wrong does not fail loudly: the server rejects every request
+//! with `STATUS_ACCESS_DENIED`, which reads exactly like a credential problem and sends you
+//! to look at the password.
+//!
+//! `RCP_NO_AES_NI` used to force rcp's own portable cipher. It is still accepted and is now
+//! a no-op: the crate's selection cannot be overridden at run time.
 
 use crate::sha256::hmac_sha256;
 
-/// The AES S-box (FIPS-197 figure 7).
-const SBOX: [u8; 256] = [
-    0x63, 0x7c, 0x77, 0x7b, 0xf2, 0x6b, 0x6f, 0xc5, 0x30, 0x01, 0x67, 0x2b, 0xfe, 0xd7, 0xab, 0x76,
-    0xca, 0x82, 0xc9, 0x7d, 0xfa, 0x59, 0x47, 0xf0, 0xad, 0xd4, 0xa2, 0xaf, 0x9c, 0xa4, 0x72, 0xc0,
-    0xb7, 0xfd, 0x93, 0x26, 0x36, 0x3f, 0xf7, 0xcc, 0x34, 0xa5, 0xe5, 0xf1, 0x71, 0xd8, 0x31, 0x15,
-    0x04, 0xc7, 0x23, 0xc3, 0x18, 0x96, 0x05, 0x9a, 0x07, 0x12, 0x80, 0xe2, 0xeb, 0x27, 0xb2, 0x75,
-    0x09, 0x83, 0x2c, 0x1a, 0x1b, 0x6e, 0x5a, 0xa0, 0x52, 0x3b, 0xd6, 0xb3, 0x29, 0xe3, 0x2f, 0x84,
-    0x53, 0xd1, 0x00, 0xed, 0x20, 0xfc, 0xb1, 0x5b, 0x6a, 0xcb, 0xbe, 0x39, 0x4a, 0x4c, 0x58, 0xcf,
-    0xd0, 0xef, 0xaa, 0xfb, 0x43, 0x4d, 0x33, 0x85, 0x45, 0xf9, 0x02, 0x7f, 0x50, 0x3c, 0x9f, 0xa8,
-    0x51, 0xa3, 0x40, 0x8f, 0x92, 0x9d, 0x38, 0xf5, 0xbc, 0xb6, 0xda, 0x21, 0x10, 0xff, 0xf3, 0xd2,
-    0xcd, 0x0c, 0x13, 0xec, 0x5f, 0x97, 0x44, 0x17, 0xc4, 0xa7, 0x7e, 0x3d, 0x64, 0x5d, 0x19, 0x73,
-    0x60, 0x81, 0x4f, 0xdc, 0x22, 0x2a, 0x90, 0x88, 0x46, 0xee, 0xb8, 0x14, 0xde, 0x5e, 0x0b, 0xdb,
-    0xe0, 0x32, 0x3a, 0x0a, 0x49, 0x06, 0x24, 0x5c, 0xc2, 0xd3, 0xac, 0x62, 0x91, 0x95, 0xe4, 0x79,
-    0xe7, 0xc8, 0x37, 0x6d, 0x8d, 0xd5, 0x4e, 0xa9, 0x6c, 0x56, 0xf4, 0xea, 0x65, 0x7a, 0xae, 0x08,
-    0xba, 0x78, 0x25, 0x2e, 0x1c, 0xa6, 0xb4, 0xc6, 0xe8, 0xdd, 0x74, 0x1f, 0x4b, 0xbd, 0x8b, 0x8a,
-    0x70, 0x3e, 0xb5, 0x66, 0x48, 0x03, 0xf6, 0x0e, 0x61, 0x35, 0x57, 0xb9, 0x86, 0xc1, 0x1d, 0x9e,
-    0xe1, 0xf8, 0x98, 0x11, 0x69, 0xd9, 0x8e, 0x94, 0x9b, 0x1e, 0x87, 0xe9, 0xce, 0x55, 0x28, 0xdf,
-    0x8c, 0xa1, 0x89, 0x0d, 0xbf, 0xe6, 0x42, 0x68, 0x41, 0x99, 0x2d, 0x0f, 0xb0, 0x54, 0xbb, 0x16,
-];
-
-/// Multiply by x in GF(2^8) with the AES polynomial.
-fn xtime(b: u8) -> u8 {
-    (b << 1) ^ if b & 0x80 != 0 { 0x1b } else { 0 }
-}
-
-/// An AES-128 encryption schedule. Encryption only: CMAC never decrypts.
-pub struct Aes128 {
-    round_keys: [[u8; 16]; 11],
-}
-
-impl Aes128 {
-    pub fn new(key: &[u8; 16]) -> Aes128 {
-        let mut rk = [[0u8; 16]; 11];
-        rk[0].copy_from_slice(key);
-        let mut rcon = 1u8;
-        for r in 1..11 {
-            let prev = rk[r - 1];
-            // RotWord + SubWord + Rcon on the last column
-            let mut t = [
-                SBOX[prev[13] as usize],
-                SBOX[prev[14] as usize],
-                SBOX[prev[15] as usize],
-                SBOX[prev[12] as usize],
-            ];
-            t[0] ^= rcon;
-            rcon = xtime(rcon);
-            for i in 0..4 {
-                rk[r][i] = prev[i] ^ t[i];
-            }
-            for i in 4..16 {
-                rk[r][i] = prev[i] ^ rk[r][i - 4];
-            }
-        }
-        Aes128 { round_keys: rk }
-    }
-
-    /// One block, on whichever implementation `aes_ni::backend()` selected.
-    pub fn encrypt_block(&self, block: &mut [u8; 16]) {
-        self.encrypt_block_with(super::aes_ni::backend(), block)
-    }
-
-    /// One block on an EXPLICIT implementation. The arms call this with both backends in one
-    /// process, which a process-global selection could not do.
-    pub fn encrypt_block_with(&self, backend: super::aes_ni::Backend, block: &mut [u8; 16]) {
-        #[cfg(target_arch = "x86_64")]
-        if backend == super::aes_ni::Backend::HardwareAesNi {
-            return super::aes_ni::encrypt_block(&self.round_keys, block);
-        }
-        let _ = backend;
-        self.encrypt_block_portable(block)
-    }
-
-    /// The table-driven software cipher. Retained as the fallback on a CPU without AES-NI and
-    /// as the ORACLE the hardware path is differentially tested against.
-    fn encrypt_block_portable(&self, block: &mut [u8; 16]) {
-        for (b, k) in block.iter_mut().zip(self.round_keys[0].iter()) {
-            *b ^= k;
-        }
-        for r in 1..11 {
-            for b in block.iter_mut() {
-                *b = SBOX[*b as usize];
-            }
-            shift_rows(block);
-            if r != 10 {
-                mix_columns(block);
-            }
-            for (b, k) in block.iter_mut().zip(self.round_keys[r].iter()) {
-                *b ^= k;
-            }
-        }
-    }
-}
-
-/// The state is column-major: byte `4*c + r` is row r, column c. Row r rotates left by r.
-fn shift_rows(s: &mut [u8; 16]) {
-    let t = *s;
-    for c in 0..4 {
-        for r in 1..4 {
-            s[4 * c + r] = t[4 * ((c + r) % 4) + r];
-        }
-    }
-}
-
-fn mix_columns(s: &mut [u8; 16]) {
-    for c in 0..4 {
-        let a = [s[4 * c], s[4 * c + 1], s[4 * c + 2], s[4 * c + 3]];
-        let t = a[0] ^ a[1] ^ a[2] ^ a[3];
-        for r in 0..4 {
-            s[4 * c + r] = a[r] ^ t ^ xtime(a[r] ^ a[(r + 1) % 4]);
-        }
-    }
-}
-
-/// The CMAC subkey derivation (RFC 4493 section 2.3): shift left, and conditionally xor
-/// the constant, which is what makes the two subkeys distinguish a padded final block from
-/// a whole one.
-fn shift_left_and_reduce(input: [u8; 16]) -> [u8; 16] {
-    let mut out = [0u8; 16];
-    let mut carry = 0u8;
-    for i in (0..16).rev() {
-        out[i] = (input[i] << 1) | carry;
-        carry = input[i] >> 7;
-    }
-    if input[0] & 0x80 != 0 {
-        out[15] ^= 0x87;
-    }
-    out
-}
-
 /// AES-128-CMAC (RFC 4493).
 pub fn aes_cmac(key: &[u8; 16], message: &[u8]) -> [u8; 16] {
-    aes_cmac_with(super::aes_ni::backend(), key, message)
-}
-
-/// AES-CMAC on an explicit backend. See `Aes128::encrypt_block_with` for why it is explicit.
-pub fn aes_cmac_with(backend: super::aes_ni::Backend, key: &[u8; 16], message: &[u8]) -> [u8; 16] {
-    let aes = Aes128::new(key);
-    let mut zero = [0u8; 16];
-    aes.encrypt_block_with(backend, &mut zero);
-    let k1 = shift_left_and_reduce(zero);
-    let k2 = shift_left_and_reduce(k1);
-
-    let whole = !message.is_empty() && message.len().is_multiple_of(16);
-    let blocks = if message.is_empty() {
-        1
-    } else {
-        message.len().div_ceil(16)
-    };
-
-    // Every block but the last, CBC-chained. On the hardware path the whole run happens in
-    // one call with the state held in a register -- that loop is where signing spends its
-    // time, so it is dispatched as a unit rather than a block at a time.
-    let mut x = [0u8; 16];
-    let body = &message[..(blocks - 1) * 16];
-    #[cfg(target_arch = "x86_64")]
-    let done = if backend == super::aes_ni::Backend::HardwareAesNi {
-        super::aes_ni::cbc_absorb(&aes.round_keys, &mut x, body);
-        true
-    } else {
-        false
-    };
-    #[cfg(not(target_arch = "x86_64"))]
-    let done = false;
-    if !done {
-        for block in body.chunks_exact(16) {
-            for j in 0..16 {
-                x[j] ^= block[j];
-            }
-            aes.encrypt_block_portable(&mut x);
-        }
-    }
-
-    let mut last = [0u8; 16];
-    if whole {
-        last.copy_from_slice(&message[(blocks - 1) * 16..]);
-        for j in 0..16 {
-            last[j] ^= k1[j];
-        }
-    } else {
-        let tail = &message[(blocks - 1) * 16..];
-        last[..tail.len()].copy_from_slice(tail);
-        last[tail.len()] = 0x80;
-        for j in 0..16 {
-            last[j] ^= k2[j];
-        }
-    }
-    for j in 0..16 {
-        x[j] ^= last[j];
-    }
-    aes.encrypt_block_with(backend, &mut x);
-    x
+    use cmac::{KeyInit, Mac};
+    let mut mac = cmac::Cmac::<aes::Aes128>::new(key.into());
+    mac.update(message);
+    mac.finalize().into_bytes().into()
 }
 
 /// The bytes the PRF is run over: `i || Label || 0x00 || Context || L`, per SP800-108
@@ -246,9 +67,9 @@ fn kdf_input(label: &[u8], context: &[u8]) -> Vec<u8> {
 /// 128 bits out. `label` and `context` are passed NUL-terminated -- see `kdf_input`.
 pub fn kdf(key: &[u8], label: &[u8], context: &[u8]) -> [u8; 16] {
     let full = hmac_sha256(key, &kdf_input(label, context));
-    let mut out = [0u8; 16];
-    out.copy_from_slice(&full[..16]);
-    out
+    full[..16]
+        .try_into()
+        .expect("HMAC-SHA256 output is 32 bytes")
 }
 
 /// The key this connection signs with, derived from the session key per dialect.
@@ -256,10 +77,11 @@ pub fn kdf(key: &[u8], label: &[u8], context: &[u8]) -> [u8; 16] {
 /// 0x0202 and 0x0210 sign with the session key itself. 0x0300 derives, and the label and
 /// context are exactly these strings -- `SMB2AESCMAC` and `SmbSign` -- which is the kind of
 /// constant that is either right or produces a key that fails everything.
-pub fn signing_key(session_key: &[u8], dialect: u16) -> Option<[u8; 16]> {
-    let mut k = [0u8; 16];
-    let n = session_key.len().min(16);
-    k[..n].copy_from_slice(&session_key[..n]);
+///
+/// The session key is NTLMv2's, which is always exactly 16 bytes, so the type says so and
+/// MS-SMB2's padding of a shorter key never arises.
+pub fn signing_key(session_key: &[u8; 16], dialect: u16) -> Option<[u8; 16]> {
+    let k = *session_key;
     // MATCHED EXACTLY, not with `>=`, and that is the point of this shape.
     //
     // `dialect >= 0x0300` is correct for every dialect this client currently offers and
@@ -295,12 +117,11 @@ pub fn sign(message: &[u8], key: &[u8; 16], dialect: u16) -> [u8; 16] {
     // avoid it would complicate both the CMAC block loop and the HMAC path to recover half
     // a percent.
     //
-    // The other 99.5% was not this copy: portable signing ran at about **78 MB/s**, because
-    // table-driven software AES has no AES-NI. `aes_ni.rs` addresses that. Measured on
-    // `aes_cmac` itself (1 MiB, 20 iterations, a 2.1 GHz Xeon, reproduced independently):
-    // portable 10.530 ms = 100 MB/s, AES-NI 0.787 ms = 1333 MB/s, 13.4x. CMAC is
-    // CBC-chained, so that is one block's `aesenc` LATENCY at a time and not the
-    // instruction's throughput.
+    // The other 99.5% was not this copy but the MAC: a table-driven software AES ran at
+    // about 78-100 MB/s, and AES-NI at well over 1 GB/s. The `aes` crate takes the hardware
+    // path where the CPU has it; measured on `aes_cmac` (1 MiB, best of 5, a Xeon with
+    // AES-NI) it runs at about 1.7 GB/s. CMAC is CBC-chained, so that is one block's
+    // `aesenc` LATENCY at a time and not the instruction's throughput.
     //
     // **What that number is NOT is the speed of a signed stream**, and it is tempting to
     // read it as "above 10 GbE line rate". A signed WRITE copies its payload four times --
@@ -357,77 +178,50 @@ mod tests {
         b.iter().map(|x| format!("{x:02x}")).collect()
     }
 
-    /// FIPS-197 appendix C.1, the published AES-128 vector.
+    /// FIPS-197 appendix C.1, the published AES-128 vector, on the cipher signing uses.
     ///
-    /// A hand-written block cipher that is subtly wrong still produces 16 plausible bytes,
-    /// and every failure downstream reads as an authentication problem. So it is checked
-    /// against the number in the standard rather than against itself.
+    /// A block cipher wired up wrongly (the wrong key size, the wrong crate type) still
+    /// produces 16 plausible bytes, and every failure downstream reads as an authentication
+    /// problem. So it is checked against the number in the standard.
     #[test]
     fn the_aes_block_matches_the_fips_197_vector() {
+        use aes::cipher::{BlockCipherEncrypt, KeyInit};
         let key: [u8; 16] = [
             0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09, 0x0a, 0x0b, 0x0c, 0x0d,
             0x0e, 0x0f,
         ];
-        let mut block: [u8; 16] = [
+        let plain: [u8; 16] = [
             0x00, 0x11, 0x22, 0x33, 0x44, 0x55, 0x66, 0x77, 0x88, 0x99, 0xaa, 0xbb, 0xcc, 0xdd,
             0xee, 0xff,
         ];
-        Aes128::new(&key).encrypt_block(&mut block);
+        let encrypt = |k: &[u8; 16]| {
+            let mut block = plain.into();
+            aes::Aes128::new(k.into()).encrypt_block(&mut block);
+            let out: [u8; 16] = block.into();
+            out
+        };
+        let block = encrypt(&key);
         assert_eq!(hex(&block), "69c4e0d86a7b0430d8cdb78070b4c55a");
-        // and on EACH implementation explicitly, not only whichever one this machine picked
-        for backend in backends() {
-            let mut b: [u8; 16] = [
-                0x00, 0x11, 0x22, 0x33, 0x44, 0x55, 0x66, 0x77, 0x88, 0x99, 0xaa, 0xbb, 0xcc, 0xdd,
-                0xee, 0xff,
-            ];
-            Aes128::new(&key).encrypt_block_with(backend, &mut b);
-            assert_eq!(
-                hex(&b),
-                "69c4e0d86a7b0430d8cdb78070b4c55a",
-                "FIPS-197 C.1 on {backend:?}"
-            );
-        }
         // THE CONTROL: one bit of the key changes the whole block, so this is not a
         // function that happens to return its input or a constant.
-        let mut other = [
-            0x00, 0x11, 0x22, 0x33, 0x44, 0x55, 0x66, 0x77, 0x88, 0x99, 0xaa, 0xbb, 0xcc, 0xdd,
-            0xee, 0xff,
-        ];
         let mut k2 = key;
         k2[0] ^= 1;
-        Aes128::new(&k2).encrypt_block(&mut other);
-        assert_ne!(hex(&other), hex(&block));
+        assert_ne!(hex(&encrypt(&k2)), hex(&block));
     }
 
-    /// Every implementation this machine can run. The portable one always; the hardware one
-    /// only where the CPU has it, because calling an AES-NI instruction on a CPU without it
-    /// is an illegal-instruction fault, not a test failure.
-    fn backends() -> Vec<crate::smb::aes_ni::Backend> {
-        use crate::smb::aes_ni::{cpu_has_aes_ni, Backend};
-        let mut v = vec![Backend::Portable];
-        if cpu_has_aes_ni() {
-            v.push(Backend::HardwareAesNi);
-        }
-        v
-    }
-
-    /// The hardware and portable ciphers agree on arbitrary keys and messages.
+    /// A real 0x0300 `sign` IS AES-128-CMAC over the message with its signature field
+    /// zeroed, computed by the `cmac` crate, and a 0x02xx `sign` is not.
     ///
-    /// Vectors pin a handful of points; a hand-written intrinsic kernel is exactly where a
-    /// round-ordering slip hides at some OTHER point -- a key the vectors do not use, a
-    /// length they do not reach. So every length from 0 to 80 (all sixteen residues mod 16,
-    /// which is what decides the CMAC subkey) plus a large body is run through both, under
-    /// fresh keys, and required to match byte for byte. The portable cipher is the oracle,
-    /// and it is itself pinned to FIPS-197 and RFC 4493 above.
+    /// This replaces the old arm that counted entries into rcp's own AES-NI kernel: that
+    /// kernel is gone, and the crate picks its hardware path itself. What can still go
+    /// wrong at THIS layer is the call site -- the wrong algorithm for a dialect, or a
+    /// field left unzeroed -- so that is what is pinned, against the crate called directly
+    /// and over every length residue mod 16 (which decides the CMAC subkey) plus large
+    /// bodies.
     #[test]
-    fn the_hardware_cipher_agrees_with_the_portable_one_on_every_length() {
-        use crate::smb::aes_ni::{cpu_has_aes_ni, Backend};
-        if !cpu_has_aes_ni() {
-            eprintln!("SKIP: this CPU has no AES-NI, so there is no hardware path to compare");
-            return;
-        }
-        // xorshift64: no rand dependency in this crate, and the property needed is only
-        // variety across keys and bytes, reproducibly.
+    fn a_real_signature_is_the_crate_cmac_exactly_when_the_dialect_asks_for_it() {
+        use cmac::{KeyInit, Mac};
+        // xorshift64: reproducible variety across keys and bytes.
         let mut state = 0x9e37_79b9_7f4a_7c15u64;
         let mut next = || {
             state ^= state << 13;
@@ -436,100 +230,30 @@ mod tests {
             state
         };
         let mut compared = 0;
-        for round in 0..64 {
+        for round in 0..16 {
             let mut key = [0u8; 16];
             key.iter_mut().for_each(|b| *b = next() as u8);
-            for len in (0..=80).chain([1024, 65_536 + 7]) {
+            for len in (64..=80).chain([1024, 65_536 + 7]) {
                 let msg: Vec<u8> = (0..len).map(|_| next() as u8).collect();
-                let soft = aes_cmac_with(Backend::Portable, &key, &msg);
-                let hard = aes_cmac_with(Backend::HardwareAesNi, &key, &msg);
+                let mut zeroed = msg.clone();
+                zeroed[48..64].fill(0);
+                let mut mac = cmac::Cmac::<aes::Aes128>::new((&key).into());
+                mac.update(&zeroed);
+                let want: [u8; 16] = mac.finalize().into_bytes().into();
                 assert_eq!(
-                    hard, soft,
-                    "round {round}, {len}-byte message: AES-NI and portable disagree"
+                    sign(&msg, &key, 0x0300),
+                    want,
+                    "round {round}, {len}-byte message: 0x0300 is not AES-CMAC"
                 );
+                // THE CONTROL: 0x0210 signs with HMAC-SHA256, so it must differ.
+                assert_ne!(sign(&msg, &key, 0x0210), want, "0x0210 used AES-CMAC");
                 compared += 1;
             }
-            let mut a = [0u8; 16];
-            a.iter_mut().for_each(|b| *b = next() as u8);
-            let mut b = a;
-            let aes = Aes128::new(&key);
-            aes.encrypt_block_with(Backend::Portable, &mut a);
-            aes.encrypt_block_with(Backend::HardwareAesNi, &mut b);
-            assert_eq!(a, b, "round {round}: a single block disagrees");
         }
         assert_eq!(
             compared,
-            64 * 83,
+            16 * 19,
             "the comparison loop did not run as many cases as it claims"
-        );
-    }
-
-    /// A real `sign` call ENTERS the hardware cipher whenever the hardware cipher was
-    /// selected, and never enters it when it was not.
-    ///
-    /// Every correctness arm passes just as well if signing always runs the portable
-    /// cipher, because the portable cipher is correct -- so correctness cannot detect the
-    /// failure that would matter most here: a fast path that is never taken, leaving
-    /// signing at 78 MB/s while every test is green.
-    ///
-    /// **Asking `backend()` is not enough, because that cannot fail.** Replanted:
-    /// `aes_cmac` hardwired to `Backend::Portable` leaves `backend()` reporting hardware and
-    /// all nine signing arms green. The selection is right; the call site ignores it. So
-    /// this counts entries into the hardware cipher across a real `sign`, which is a fact
-    /// about the path that ran rather than about the one that was chosen.
-    #[test]
-    fn a_real_signature_enters_the_hardware_cipher_exactly_when_it_was_selected() {
-        use crate::smb::aes_ni::{backend, cpu_has_aes_ni, hardware_entries, select, Backend};
-        // The decision, on all four of its inputs. `backend()` is cached per process, so
-        // this is the only place the override can be exercised without changing every
-        // other arm in the run.
-        assert_eq!(
-            select(false, true),
-            Backend::HardwareAesNi,
-            "a CPU with AES-NI and no override must use it"
-        );
-        assert_eq!(
-            select(true, true),
-            Backend::Portable,
-            "RCP_NO_AES_NI must be honored on a CPU that has AES-NI"
-        );
-        assert_eq!(
-            select(false, false),
-            Backend::Portable,
-            "a CPU without AES-NI must never select it"
-        );
-        assert_eq!(select(true, false), Backend::Portable);
-        // and the process's choice IS that decision applied to the real inputs
-        assert_eq!(
-            backend(),
-            select(
-                std::env::var_os("RCP_NO_AES_NI").is_some(),
-                cpu_has_aes_ni()
-            )
-        );
-
-        let key = [3u8; 16];
-        let msg = vec![0x5au8; 4096];
-        let before = hardware_entries();
-        let _ = sign(&msg, &key, 0x0300);
-        let entered = hardware_entries() - before;
-        if backend() == Backend::HardwareAesNi {
-            // the subkey block, the CBC body, and the final block
-            assert!(entered >= 2, "the hardware cipher was selected, but a real 0x0300 signature entered it {entered} times");
-        } else {
-            assert_eq!(
-                entered, 0,
-                "the portable cipher was selected, but the hardware one ran"
-            );
-        }
-        // THE CONTROL: 0x02xx signs with HMAC-SHA256 and must not touch AES at all, so the
-        // counter is counting AES entries and not every call into this module.
-        let before = hardware_entries();
-        let _ = sign(&msg, &key, 0x0210);
-        assert_eq!(
-            hardware_entries(),
-            before,
-            "an HMAC-SHA256 signature entered the AES cipher"
         );
     }
 
@@ -593,16 +317,14 @@ mod tests {
             "7a15a40ab2c6be85cc7678fe2ee5f57d",
             "AES-CMAC signature"
         );
-        // on each cipher explicitly, not only on the one this machine selected
+        // and the MAC alone over the zeroed message, without `sign` around it
         let mut zeroed = msg.clone();
         zeroed[48..64].fill(0);
-        for backend in backends() {
-            assert_eq!(
-                hex(&aes_cmac_with(backend, &k300, &zeroed)),
-                "7a15a40ab2c6be85cc7678fe2ee5f57d",
-                "CMAC on {backend:?}"
-            );
-        }
+        assert_eq!(
+            hex(&aes_cmac(&k300, &zeroed)),
+            "7a15a40ab2c6be85cc7678fe2ee5f57d",
+            "CMAC over the zeroed message"
+        );
         // and a message carrying the independent signature verifies in place
         let mut signed = msg.clone();
         signed[48..64].copy_from_slice(&unhex("7a15a40ab2c6be85cc7678fe2ee5f57d"));
@@ -651,20 +373,6 @@ mod tests {
             "51f0bebf7e3b9d92fc49741779363cfe",
             "four whole blocks"
         );
-        for backend in backends() {
-            for (n, want) in [
-                (0usize, "bb1d6929e95937287fa37d129b756746"),
-                (16, "070a16b46b4d4144f79bdd9dd04a287c"),
-                (40, "dfa66747de9ae63030ca32611497c827"),
-                (64, "51f0bebf7e3b9d92fc49741779363cfe"),
-            ] {
-                assert_eq!(
-                    hex(&aes_cmac_with(backend, &key, &msg[..n])),
-                    want,
-                    "RFC 4493, {n}-byte message, on {backend:?}"
-                );
-            }
-        }
         // THE CONTROL: the two subkeys really do differ, so a 16-byte message and the same
         // 16 bytes padded to 32 do not collide.
         let mut padded = msg[..16].to_vec();

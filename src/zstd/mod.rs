@@ -1,4 +1,4 @@
-//! Zstandard, written here rather than linked, because this crate ships no dependencies.
+//! Zstandard, written here rather than linked: rcp's only crate dependencies are cryptography.
 //!
 //! **Read `docs/src/design-notes.md` before touching this.** A thin thing called zstd would be a
 //! label rather than a capability, which is why DEFLATE sits in this crate under its own

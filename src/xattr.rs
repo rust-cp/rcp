@@ -1,5 +1,5 @@
-//! Extended attributes through the libc calls, declared here so the crate stays
-//! dependency-free. POSIX ACLs (`system.posix_acl_access`, `system.posix_acl_default`) and
+//! Extended attributes through the libc calls, declared here rather than through the
+//! `libc` crate. POSIX ACLs (`system.posix_acl_access`, `system.posix_acl_default`) and
 //! NFSv4 ACLs on an NFS mount (`system.nfs4_acl`) are extended attributes, so copying them all
 //! is what carries the ACLs across. The `l*` variants never follow symlinks; the `f*` variant
 //! works on an open descriptor, which is how a file being written gets its attributes before

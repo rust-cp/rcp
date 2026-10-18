@@ -1731,7 +1731,7 @@ fn blake3_is_the_digest_when_asked_and_sha256_otherwise() {
         )),
         "{text}"
     );
-    assert!(stdout(&rcp(&cat, &["version"])).contains("blake3: portable"));
+    assert!(stdout(&rcp(&cat, &["version"])).contains("blake3: the blake3 crate"));
 
     // A catalog's digest column holds hex and one algorithm's worth of meaning, and the
     // column is named `sha256` because for a long time that is all it could be. With four
@@ -15763,7 +15763,7 @@ fn rcps_endpoints_need_mutual_tls_before_they_leave_loopback() {
 ///
 /// It is deflate and not zstd on purpose. The roadmap row asked for zstd; a zstd codec is
 /// FSE entropy coding, Huffman literals and a sequence format in both directions, in a
-/// crate that ships no dependencies, and shipping something thin under that name would be
+/// crate that depends on nothing but cryptography, and shipping something thin under that name would be
 /// a label rather than a capability. What the row wanted -- a second codec, negotiated in
 /// HELLO, trading CPU for ratio where LZ4 trades the other way -- is what this measures,
 /// using the DEFLATE encoder the crate already has for `.tar.gz`.

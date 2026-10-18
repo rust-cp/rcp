@@ -37,7 +37,7 @@ RPCSEC_GSS instead of AUTH_SYS, which is what an export with `sec=krb5*` require
 carries no Kerberos code of its own: it loads the host's GSSAPI library (`libgssapi_krb5`,
 the one the kernel's `rpc.gssd`, `mount.nfs` and `curl` use) at run time, so the host's
 `krb5.conf`, ticket cache (`kinit` first, or `KRB5CCNAME`) and keytabs apply unchanged and
-the default build stays dependency-free; a host without the library gets a clear refusal
+the build links no Kerberos library; a host without the library gets a clear refusal
 when Kerberos is asked for. Each connection establishes its own context with `nfs@host`,
 every call's header carries a MIC, and `krb5i` checksums the body while `krb5p` encrypts
 it, in both directions; the pipelining is untouched, since a context is per connection and

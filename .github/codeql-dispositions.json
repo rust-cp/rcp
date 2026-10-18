@@ -9,25 +9,25 @@
       "partialFingerprints": {
         "primaryLocationLineHash": "5805a25bcdfb5326:1"
       },
-      "scannedStartLine": 1888,
+      "scannedStartLine": 1898,
       "classification": "false_positive",
       "owningFunction": "a_real_server_negotiates_authenticates_and_connects_a_share",
       "reason": "Test starts its own local impacket SMB fixture, uses its synthetic paired credential, tests deliberate wrong-password refusal, and tears the fixture down. This specific finding is not reachable in a non-test build.",
       "cfgTestEvidence": [
         {
           "path": "src/smb/conn.rs",
-          "line": 1489,
+          "line": 1499,
           "attribute": "#[cfg(test)]",
           "scope": "mod tests"
         },
         {
           "path": "src/smb/conn.rs",
-          "line": 1856,
+          "line": 1866,
           "scope": "tests::a_real_server_negotiates_authenticates_and_connects_a_share"
         }
       ],
       "sourceHashes": {
-        "src/smb/conn.rs": "b77ad5d5a7d55a2d8d41fa10646e86eca1d1ed06c2b718c0efa240f32e965634"
+        "src/smb/conn.rs": "21d5066d4312f7467abeab82857267bbe66073f1bdd635d753f0aeb8778e11ad"
       },
       "scope": "test_fixture",
       "flowDigest": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
@@ -38,25 +38,25 @@
       "partialFingerprints": {
         "primaryLocationLineHash": "c8365991255be28a:1"
       },
-      "scannedStartLine": 1897,
+      "scannedStartLine": 1907,
       "classification": "false_positive",
       "owningFunction": "a_real_server_negotiates_authenticates_and_connects_a_share",
       "reason": "Test starts its own local impacket SMB fixture, uses its synthetic paired credential, tests deliberate wrong-password refusal, and tears the fixture down. This specific finding is not reachable in a non-test build.",
       "cfgTestEvidence": [
         {
           "path": "src/smb/conn.rs",
-          "line": 1489,
+          "line": 1499,
           "attribute": "#[cfg(test)]",
           "scope": "mod tests"
         },
         {
           "path": "src/smb/conn.rs",
-          "line": 1856,
+          "line": 1866,
           "scope": "tests::a_real_server_negotiates_authenticates_and_connects_a_share"
         }
       ],
       "sourceHashes": {
-        "src/smb/conn.rs": "b77ad5d5a7d55a2d8d41fa10646e86eca1d1ed06c2b718c0efa240f32e965634"
+        "src/smb/conn.rs": "21d5066d4312f7467abeab82857267bbe66073f1bdd635d753f0aeb8778e11ad"
       },
       "scope": "test_fixture",
       "flowDigest": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
@@ -67,25 +67,25 @@
       "partialFingerprints": {
         "primaryLocationLineHash": "49f641127a5a4c80:1"
       },
-      "scannedStartLine": 1905,
+      "scannedStartLine": 1915,
       "classification": "false_positive",
       "owningFunction": "a_real_server_negotiates_authenticates_and_connects_a_share",
       "reason": "Test starts its own local impacket SMB fixture, uses its synthetic paired credential, tests deliberate wrong-password refusal, and tears the fixture down. This specific finding is not reachable in a non-test build.",
       "cfgTestEvidence": [
         {
           "path": "src/smb/conn.rs",
-          "line": 1489,
+          "line": 1499,
           "attribute": "#[cfg(test)]",
           "scope": "mod tests"
         },
         {
           "path": "src/smb/conn.rs",
-          "line": 1856,
+          "line": 1866,
           "scope": "tests::a_real_server_negotiates_authenticates_and_connects_a_share"
         }
       ],
       "sourceHashes": {
-        "src/smb/conn.rs": "b77ad5d5a7d55a2d8d41fa10646e86eca1d1ed06c2b718c0efa240f32e965634"
+        "src/smb/conn.rs": "21d5066d4312f7467abeab82857267bbe66073f1bdd635d753f0aeb8778e11ad"
       },
       "scope": "test_fixture",
       "flowDigest": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
@@ -114,7 +114,7 @@
         }
       ],
       "sourceHashes": {
-        "src/smb/client.rs": "d4dae30f02a4cd3b8275f9a927d5bdf59b0e68b45816b75c4b6a5048ffbb7a40"
+        "src/smb/client.rs": "407473cc901d873d827954b5519e5fcb3f17557b3b9a1fe0348fd024105c58fa"
       },
       "scope": "test_fixture",
       "flowDigest": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
@@ -125,25 +125,25 @@
       "partialFingerprints": {
         "primaryLocationLineHash": "8085276c546960b4:1"
       },
-      "scannedStartLine": 2221,
+      "scannedStartLine": 2231,
       "classification": "false_positive",
       "owningFunction": "the_final_session_setup_must_be_signed_by_the_key_this_login_derived",
       "reason": "Deliberately wrong synthetic password against local scripted signing peer must be refused because the final reply cannot authenticate under the derived key. This specific finding is not reachable in a non-test build.",
       "cfgTestEvidence": [
         {
           "path": "src/smb/conn.rs",
-          "line": 1489,
+          "line": 1499,
           "attribute": "#[cfg(test)]",
           "scope": "mod tests"
         },
         {
           "path": "src/smb/conn.rs",
-          "line": 2199,
+          "line": 2209,
           "scope": "tests::the_final_session_setup_must_be_signed_by_the_key_this_login_derived"
         }
       ],
       "sourceHashes": {
-        "src/smb/conn.rs": "b77ad5d5a7d55a2d8d41fa10646e86eca1d1ed06c2b718c0efa240f32e965634"
+        "src/smb/conn.rs": "21d5066d4312f7467abeab82857267bbe66073f1bdd635d753f0aeb8778e11ad"
       },
       "scope": "test_fixture",
       "flowDigest": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
@@ -154,25 +154,25 @@
       "partialFingerprints": {
         "primaryLocationLineHash": "55f1ae0b7aa5902b:1"
       },
-      "scannedStartLine": 2251,
+      "scannedStartLine": 2261,
       "classification": "false_positive",
       "owningFunction": "a_wrong_password_is_refused_by_the_peer_not_merely_mis_keyed",
       "reason": "Wrong-password negative control against local scripted peer asserts PermissionDenied; a subsequent fixture-password login is the positive control. This specific finding is not reachable in a non-test build.",
       "cfgTestEvidence": [
         {
           "path": "src/smb/conn.rs",
-          "line": 1489,
+          "line": 1499,
           "attribute": "#[cfg(test)]",
           "scope": "mod tests"
         },
         {
           "path": "src/smb/conn.rs",
-          "line": 2245,
+          "line": 2255,
           "scope": "tests::a_wrong_password_is_refused_by_the_peer_not_merely_mis_keyed"
         }
       ],
       "sourceHashes": {
-        "src/smb/conn.rs": "b77ad5d5a7d55a2d8d41fa10646e86eca1d1ed06c2b718c0efa240f32e965634"
+        "src/smb/conn.rs": "21d5066d4312f7467abeab82857267bbe66073f1bdd635d753f0aeb8778e11ad"
       },
       "scope": "test_fixture",
       "flowDigest": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
@@ -201,7 +201,7 @@
         }
       ],
       "sourceHashes": {
-        "src/smb/client.rs": "d4dae30f02a4cd3b8275f9a927d5bdf59b0e68b45816b75c4b6a5048ffbb7a40"
+        "src/smb/client.rs": "407473cc901d873d827954b5519e5fcb3f17557b3b9a1fe0348fd024105c58fa"
       },
       "scope": "test_fixture",
       "flowDigest": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
@@ -212,25 +212,25 @@
       "partialFingerprints": {
         "primaryLocationLineHash": "d4033ba3e33b0893:1"
       },
-      "scannedStartLine": 2284,
+      "scannedStartLine": 2294,
       "classification": "false_positive",
       "owningFunction": "a_guest_session_for_a_named_user_is_refused",
       "reason": "Synthetic local Guest peer tests named-user refusal and explicit anonymous-login control; no persistent account or production key is configured. This specific finding is not reachable in a non-test build.",
       "cfgTestEvidence": [
         {
           "path": "src/smb/conn.rs",
-          "line": 1489,
+          "line": 1499,
           "attribute": "#[cfg(test)]",
           "scope": "mod tests"
         },
         {
           "path": "src/smb/conn.rs",
-          "line": 2267,
+          "line": 2277,
           "scope": "tests::a_guest_session_for_a_named_user_is_refused"
         }
       ],
       "sourceHashes": {
-        "src/smb/conn.rs": "b77ad5d5a7d55a2d8d41fa10646e86eca1d1ed06c2b718c0efa240f32e965634"
+        "src/smb/conn.rs": "21d5066d4312f7467abeab82857267bbe66073f1bdd635d753f0aeb8778e11ad"
       },
       "scope": "test_fixture",
       "flowDigest": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
@@ -259,7 +259,7 @@
         }
       ],
       "sourceHashes": {
-        "src/smb/client.rs": "d4dae30f02a4cd3b8275f9a927d5bdf59b0e68b45816b75c4b6a5048ffbb7a40"
+        "src/smb/client.rs": "407473cc901d873d827954b5519e5fcb3f17557b3b9a1fe0348fd024105c58fa"
       },
       "scope": "test_fixture",
       "flowDigest": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
@@ -270,25 +270,25 @@
       "partialFingerprints": {
         "primaryLocationLineHash": "7615da7fc2318e2d:1"
       },
-      "scannedStartLine": 2669,
+      "scannedStartLine": 2679,
       "classification": "false_positive",
       "owningFunction": "the_ntlmssp_messages_have_the_shape_a_server_reads",
       "reason": "Fixed synthetic inputs generate an NTLMSSP message for payload-offset/layout assertions, not a production login. This specific finding is not reachable in a non-test build.",
       "cfgTestEvidence": [
         {
           "path": "src/smb/conn.rs",
-          "line": 1489,
+          "line": 1499,
           "attribute": "#[cfg(test)]",
           "scope": "mod tests"
         },
         {
           "path": "src/smb/conn.rs",
-          "line": 2638,
+          "line": 2648,
           "scope": "tests::the_ntlmssp_messages_have_the_shape_a_server_reads"
         }
       ],
       "sourceHashes": {
-        "src/smb/conn.rs": "b77ad5d5a7d55a2d8d41fa10646e86eca1d1ed06c2b718c0efa240f32e965634"
+        "src/smb/conn.rs": "21d5066d4312f7467abeab82857267bbe66073f1bdd635d753f0aeb8778e11ad"
       },
       "scope": "test_fixture",
       "flowDigest": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
@@ -299,25 +299,25 @@
       "partialFingerprints": {
         "primaryLocationLineHash": "62722cba1da8a911:1"
       },
-      "scannedStartLine": 313,
+      "scannedStartLine": 177,
       "classification": "false_positive",
       "owningFunction": "ntowf_v2_matches_the_ms_nlmp_worked_example",
       "reason": "Public MS-NLMP worked-example inputs reproduce the published NTOWFv2 answer and username/domain uppercase asymmetry; these are interoperability vectors, not operational credentials. This specific finding is not reachable in a non-test build.",
       "cfgTestEvidence": [
         {
           "path": "src/smb/ntlm.rs",
-          "line": 203,
+          "line": 67,
           "attribute": "#[cfg(test)]",
           "scope": "mod tests"
         },
         {
           "path": "src/smb/ntlm.rs",
-          "line": 306,
+          "line": 170,
           "scope": "tests::ntowf_v2_matches_the_ms_nlmp_worked_example"
         }
       ],
       "sourceHashes": {
-        "src/smb/ntlm.rs": "f94c9eee3d667062b11d34c61d650a147fe897c2b091f133b4262848bf19aa08"
+        "src/smb/ntlm.rs": "f3f9e40decd92b7ed00542478f4d16bb8bde2b267a0e931545ab63959b9cc0b1"
       },
       "scope": "test_fixture",
       "flowDigest": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
@@ -346,7 +346,7 @@
         }
       ],
       "sourceHashes": {
-        "src/smb/client.rs": "d4dae30f02a4cd3b8275f9a927d5bdf59b0e68b45816b75c4b6a5048ffbb7a40"
+        "src/smb/client.rs": "407473cc901d873d827954b5519e5fcb3f17557b3b9a1fe0348fd024105c58fa"
       },
       "scope": "test_fixture",
       "flowDigest": "c45282ff1a9dc7740920d2193adc29ffa1bbeec989e694881455287d6650c2e1"
@@ -375,7 +375,7 @@
         }
       ],
       "sourceHashes": {
-        "src/smb/client.rs": "d4dae30f02a4cd3b8275f9a927d5bdf59b0e68b45816b75c4b6a5048ffbb7a40"
+        "src/smb/client.rs": "407473cc901d873d827954b5519e5fcb3f17557b3b9a1fe0348fd024105c58fa"
       },
       "scope": "test_fixture",
       "flowDigest": "5a1d1da926169e52a4505953bef48d14b95c7cc91ecb6f1aabdaa0a397c38546"
@@ -404,7 +404,7 @@
         }
       ],
       "sourceHashes": {
-        "src/smb/client.rs": "d4dae30f02a4cd3b8275f9a927d5bdf59b0e68b45816b75c4b6a5048ffbb7a40"
+        "src/smb/client.rs": "407473cc901d873d827954b5519e5fcb3f17557b3b9a1fe0348fd024105c58fa"
       },
       "scope": "test_fixture",
       "flowDigest": "4a18b884091a10271662c5372d197bfab7de6f91dd58a6bfc39fca21b4e683c9"
@@ -433,7 +433,7 @@
         }
       ],
       "sourceHashes": {
-        "src/smb/client.rs": "d4dae30f02a4cd3b8275f9a927d5bdf59b0e68b45816b75c4b6a5048ffbb7a40"
+        "src/smb/client.rs": "407473cc901d873d827954b5519e5fcb3f17557b3b9a1fe0348fd024105c58fa"
       },
       "scope": "test_fixture",
       "flowDigest": "0257f27527c4f16331f07e449518d65d896ade22d3a4d315523d4936231c0ed9"
@@ -462,7 +462,7 @@
         }
       ],
       "sourceHashes": {
-        "src/smb/client.rs": "d4dae30f02a4cd3b8275f9a927d5bdf59b0e68b45816b75c4b6a5048ffbb7a40"
+        "src/smb/client.rs": "407473cc901d873d827954b5519e5fcb3f17557b3b9a1fe0348fd024105c58fa"
       },
       "scope": "test_fixture",
       "flowDigest": "6fea633c44570a14a31b2561d315d91e22866fc8823024efeffd96d5afbb715f"
@@ -491,7 +491,7 @@
         }
       ],
       "sourceHashes": {
-        "src/smb/client.rs": "d4dae30f02a4cd3b8275f9a927d5bdf59b0e68b45816b75c4b6a5048ffbb7a40"
+        "src/smb/client.rs": "407473cc901d873d827954b5519e5fcb3f17557b3b9a1fe0348fd024105c58fa"
       },
       "scope": "test_fixture",
       "flowDigest": "97d30863aa83f893816a81cf3723dd16e62ab0c90f866e0c420d8c45ae529444"
@@ -520,7 +520,7 @@
         }
       ],
       "sourceHashes": {
-        "src/smb/client.rs": "d4dae30f02a4cd3b8275f9a927d5bdf59b0e68b45816b75c4b6a5048ffbb7a40"
+        "src/smb/client.rs": "407473cc901d873d827954b5519e5fcb3f17557b3b9a1fe0348fd024105c58fa"
       },
       "scope": "test_fixture",
       "flowDigest": "b038cabe40215f2c8389884f59e052e8f0b8b734a402d8e69acbd3b77f013182"
@@ -549,7 +549,7 @@
         }
       ],
       "sourceHashes": {
-        "src/smb/client.rs": "d4dae30f02a4cd3b8275f9a927d5bdf59b0e68b45816b75c4b6a5048ffbb7a40"
+        "src/smb/client.rs": "407473cc901d873d827954b5519e5fcb3f17557b3b9a1fe0348fd024105c58fa"
       },
       "scope": "test_fixture",
       "flowDigest": "ab3209c14b1beac6ca32aba05aa77259a7ed77d66268a2f2edac44c41c231bb2"
@@ -578,7 +578,7 @@
         }
       ],
       "sourceHashes": {
-        "src/smb/client.rs": "d4dae30f02a4cd3b8275f9a927d5bdf59b0e68b45816b75c4b6a5048ffbb7a40"
+        "src/smb/client.rs": "407473cc901d873d827954b5519e5fcb3f17557b3b9a1fe0348fd024105c58fa"
       },
       "scope": "test_fixture",
       "flowDigest": "640a6d621b3bd2780d2847bddd40368a1cefe963e26990332195caea95d9430a"
@@ -607,7 +607,7 @@
         }
       ],
       "sourceHashes": {
-        "src/smb/client.rs": "d4dae30f02a4cd3b8275f9a927d5bdf59b0e68b45816b75c4b6a5048ffbb7a40"
+        "src/smb/client.rs": "407473cc901d873d827954b5519e5fcb3f17557b3b9a1fe0348fd024105c58fa"
       },
       "scope": "test_fixture",
       "flowDigest": "4ebf101028a124212ec0f1679ba3fd25df9c0a9c24c2b7263d8c61599443e247"
@@ -618,25 +618,25 @@
       "partialFingerprints": {
         "primaryLocationLineHash": "223524df5fba0de8:1"
       },
-      "scannedStartLine": 352,
+      "scannedStartLine": 216,
       "classification": "false_positive",
       "owningFunction": "the_ntlmv2_proof_and_session_key_match_the_ms_nlmp_worked_example",
       "reason": "Public MS-NLMP section 4.2.4.2.2 worked-example inputs verify exact proof and session-key bytes; no runtime account or secret is provisioned. This specific finding is not reachable in a non-test build.",
       "cfgTestEvidence": [
         {
           "path": "src/smb/ntlm.rs",
-          "line": 203,
+          "line": 67,
           "attribute": "#[cfg(test)]",
           "scope": "mod tests"
         },
         {
           "path": "src/smb/ntlm.rs",
-          "line": 339,
+          "line": 203,
           "scope": "tests::the_ntlmv2_proof_and_session_key_match_the_ms_nlmp_worked_example"
         }
       ],
       "sourceHashes": {
-        "src/smb/ntlm.rs": "f94c9eee3d667062b11d34c61d650a147fe897c2b091f133b4262848bf19aa08"
+        "src/smb/ntlm.rs": "f3f9e40decd92b7ed00542478f4d16bb8bde2b267a0e931545ab63959b9cc0b1"
       },
       "scope": "test_fixture",
       "flowDigest": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
@@ -665,7 +665,7 @@
         }
       ],
       "sourceHashes": {
-        "src/smb/client.rs": "d4dae30f02a4cd3b8275f9a927d5bdf59b0e68b45816b75c4b6a5048ffbb7a40"
+        "src/smb/client.rs": "407473cc901d873d827954b5519e5fcb3f17557b3b9a1fe0348fd024105c58fa"
       },
       "scope": "test_fixture",
       "flowDigest": "02a5132d5cab33e2e11d44e7ed1625bd901b9021192da2c15c4514495974743f"
@@ -694,7 +694,7 @@
         }
       ],
       "sourceHashes": {
-        "src/smb/client.rs": "d4dae30f02a4cd3b8275f9a927d5bdf59b0e68b45816b75c4b6a5048ffbb7a40"
+        "src/smb/client.rs": "407473cc901d873d827954b5519e5fcb3f17557b3b9a1fe0348fd024105c58fa"
       },
       "scope": "test_fixture",
       "flowDigest": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
@@ -723,7 +723,7 @@
         }
       ],
       "sourceHashes": {
-        "src/smb/client.rs": "d4dae30f02a4cd3b8275f9a927d5bdf59b0e68b45816b75c4b6a5048ffbb7a40"
+        "src/smb/client.rs": "407473cc901d873d827954b5519e5fcb3f17557b3b9a1fe0348fd024105c58fa"
       },
       "scope": "test_fixture",
       "flowDigest": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
@@ -752,7 +752,7 @@
         }
       ],
       "sourceHashes": {
-        "src/smb/client.rs": "d4dae30f02a4cd3b8275f9a927d5bdf59b0e68b45816b75c4b6a5048ffbb7a40"
+        "src/smb/client.rs": "407473cc901d873d827954b5519e5fcb3f17557b3b9a1fe0348fd024105c58fa"
       },
       "scope": "test_fixture",
       "flowDigest": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
@@ -781,7 +781,7 @@
         }
       ],
       "sourceHashes": {
-        "src/smb/client.rs": "d4dae30f02a4cd3b8275f9a927d5bdf59b0e68b45816b75c4b6a5048ffbb7a40"
+        "src/smb/client.rs": "407473cc901d873d827954b5519e5fcb3f17557b3b9a1fe0348fd024105c58fa"
       },
       "scope": "test_fixture",
       "flowDigest": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
@@ -810,7 +810,7 @@
         }
       ],
       "sourceHashes": {
-        "src/smb/client.rs": "d4dae30f02a4cd3b8275f9a927d5bdf59b0e68b45816b75c4b6a5048ffbb7a40"
+        "src/smb/client.rs": "407473cc901d873d827954b5519e5fcb3f17557b3b9a1fe0348fd024105c58fa"
       },
       "scope": "test_fixture",
       "flowDigest": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
@@ -839,7 +839,7 @@
         }
       ],
       "sourceHashes": {
-        "src/smb/client.rs": "d4dae30f02a4cd3b8275f9a927d5bdf59b0e68b45816b75c4b6a5048ffbb7a40"
+        "src/smb/client.rs": "407473cc901d873d827954b5519e5fcb3f17557b3b9a1fe0348fd024105c58fa"
       },
       "scope": "test_fixture",
       "flowDigest": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
@@ -868,7 +868,7 @@
         }
       ],
       "sourceHashes": {
-        "src/smb/client.rs": "d4dae30f02a4cd3b8275f9a927d5bdf59b0e68b45816b75c4b6a5048ffbb7a40"
+        "src/smb/client.rs": "407473cc901d873d827954b5519e5fcb3f17557b3b9a1fe0348fd024105c58fa"
       },
       "scope": "test_fixture",
       "flowDigest": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
@@ -897,7 +897,7 @@
         }
       ],
       "sourceHashes": {
-        "src/smb/client.rs": "d4dae30f02a4cd3b8275f9a927d5bdf59b0e68b45816b75c4b6a5048ffbb7a40"
+        "src/smb/client.rs": "407473cc901d873d827954b5519e5fcb3f17557b3b9a1fe0348fd024105c58fa"
       },
       "scope": "test_fixture",
       "flowDigest": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
@@ -926,7 +926,7 @@
         }
       ],
       "sourceHashes": {
-        "src/smb/client.rs": "d4dae30f02a4cd3b8275f9a927d5bdf59b0e68b45816b75c4b6a5048ffbb7a40"
+        "src/smb/client.rs": "407473cc901d873d827954b5519e5fcb3f17557b3b9a1fe0348fd024105c58fa"
       },
       "scope": "test_fixture",
       "flowDigest": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
@@ -955,7 +955,7 @@
         }
       ],
       "sourceHashes": {
-        "src/smb/client.rs": "d4dae30f02a4cd3b8275f9a927d5bdf59b0e68b45816b75c4b6a5048ffbb7a40"
+        "src/smb/client.rs": "407473cc901d873d827954b5519e5fcb3f17557b3b9a1fe0348fd024105c58fa"
       },
       "scope": "test_fixture",
       "flowDigest": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
@@ -984,7 +984,7 @@
         }
       ],
       "sourceHashes": {
-        "src/smb/client.rs": "d4dae30f02a4cd3b8275f9a927d5bdf59b0e68b45816b75c4b6a5048ffbb7a40"
+        "src/smb/client.rs": "407473cc901d873d827954b5519e5fcb3f17557b3b9a1fe0348fd024105c58fa"
       },
       "scope": "test_fixture",
       "flowDigest": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
@@ -1013,7 +1013,7 @@
         }
       ],
       "sourceHashes": {
-        "src/smb/client.rs": "d4dae30f02a4cd3b8275f9a927d5bdf59b0e68b45816b75c4b6a5048ffbb7a40"
+        "src/smb/client.rs": "407473cc901d873d827954b5519e5fcb3f17557b3b9a1fe0348fd024105c58fa"
       },
       "scope": "test_fixture",
       "flowDigest": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
@@ -1031,7 +1031,7 @@
       "cfgTestEvidence": [
         {
           "path": "src/smb/mod.rs",
-          "line": 27,
+          "line": 26,
           "attribute": "#[cfg(test)]",
           "scope": "pub(crate) mod scripted"
         },
@@ -1052,18 +1052,14 @@
         }
       ],
       "sourceHashes": {
-        "src/smb/conn.rs": "b77ad5d5a7d55a2d8d41fa10646e86eca1d1ed06c2b718c0efa240f32e965634",
-        "src/smb/mod.rs": "138e8db6eea4fe5c227c91af3b3a27e07a51d37df29093cdf7d2edc4569be568",
+        "src/smb/conn.rs": "21d5066d4312f7467abeab82857267bbe66073f1bdd635d753f0aeb8778e11ad",
+        "src/smb/mod.rs": "4411684f2ec07c05ee7b94e361d558f00d419a766d7e70a1f38c0a11d46a2c5b",
         "src/smb/scripted.rs": "b72b5adb4500a40a5d1ed65d502bb77d0ca5a14cf3676a82d5230a4553cbed21",
-        "src/smb/client.rs": "d4dae30f02a4cd3b8275f9a927d5bdf59b0e68b45816b75c4b6a5048ffbb7a40"
+        "src/smb/client.rs": "407473cc901d873d827954b5519e5fcb3f17557b3b9a1fe0348fd024105c58fa"
       },
       "scope": "test_fixture",
       "flowDigests": [
-        "3b5883d342c0793076128a11c7b9c98de972b870cf36af42d95546579db46807",
-        "ad30301739bd7620cfa2d18bbf95816f8f7532c39e72ec95d4e5c449e450a982",
-        "dcb70204038b02be5782c342f9d1f1d9c53d6dbce6bbfae308ffbd53b42ce457",
-        "682bd197b523558e47ff9dfe144c34693fa6bae47d96bd34df02cb362b721f28",
-        "4d32f32584e96446031a20479450e72cd7d66c67c8bc8204acdcdf8709c3b259"
+        "613cdcf2e818a62bdce3dc613a962d4de73d81ba12e75f38c9eae328add847b5"
       ]
     },
     {
@@ -1074,22 +1070,21 @@
       },
       "classification": "false_positive",
       "owningFunction": "an_ipv6_endpoint_survives_parse_and_display_into_the_transport_parser",
-      "scannedStartLine": 1292,
+      "scannedStartLine": 1382,
       "scope": "test_fixture",
       "cfgTestEvidence": [
         {
           "path": "src/lib.rs",
-          "startLine": 1264,
+          "startLine": 1354,
           "scope": "#[cfg(test)] module containing the identified assertion"
         }
       ],
       "reason": "The assertion formats fixed IPv6/WebDAV fixture endpoints. CodeQL follows no_password_in, a validator that rejects passwords before constructing the endpoint and never returns the password. No credential is logged.",
       "sourceHashes": {
-        "src/lib.rs": "2ed8d5ed7ca1ff7b89c3ebd5dac6d52701b1501233087d73ce05ab45010033bc"
+        "src/lib.rs": "1d402494b50c9ef202a016d7db9f5a71dd9efadcec94a3b82c2362eb12218a44"
       },
       "flowDigests": [
-        "421ea758a1eea93b2c05b46bd6da6ab515d8aa93b777f0ff7d9b0a87897bc4a2",
-        "23af169f09545e117f5727fa147268b38142d89c864335b0b7019afab55673b5"
+        "23f5d92b10e91225686681bb7f7f2d54be3f9696945f5f082077c7fb12d27834"
       ]
     },
     {
@@ -1111,7 +1106,7 @@
       ],
       "reason": "The assertion formats a budget refusal constructed from a fixed fixture host and numeric account-lock status. account_refusal describes the lack of a password/key but never formats credential material; the credential IDs in this test are synthetic integers.",
       "sourceHashes": {
-        "src/smb/client.rs": "d4dae30f02a4cd3b8275f9a927d5bdf59b0e68b45816b75c4b6a5048ffbb7a40"
+        "src/smb/client.rs": "407473cc901d873d827954b5519e5fcb3f17557b3b9a1fe0348fd024105c58fa"
       },
       "flowDigest": "5d7d5ccec464f636e5d34b40429dd605f7cab3cda36e9ee8881aa9eea5a75b11"
     },
@@ -1134,7 +1129,7 @@
       ],
       "reason": "The assertion formats a budget refusal constructed from a fixed fixture host and numeric account-lock status. account_refusal describes the lack of a password/key but never formats credential material; the credential IDs in this test are synthetic integers.",
       "sourceHashes": {
-        "src/smb/client.rs": "d4dae30f02a4cd3b8275f9a927d5bdf59b0e68b45816b75c4b6a5048ffbb7a40"
+        "src/smb/client.rs": "407473cc901d873d827954b5519e5fcb3f17557b3b9a1fe0348fd024105c58fa"
       },
       "flowDigest": "32db3224f6350c950c5173fd1107d22ea7a2c59801210c83befe98d752b00939"
     },
@@ -1157,7 +1152,7 @@
       ],
       "reason": "The assertion formats a budget refusal constructed from a fixed fixture host and numeric account-lock status. account_refusal describes the lack of a password/key but never formats credential material; the credential IDs in this test are synthetic integers.",
       "sourceHashes": {
-        "src/smb/client.rs": "d4dae30f02a4cd3b8275f9a927d5bdf59b0e68b45816b75c4b6a5048ffbb7a40"
+        "src/smb/client.rs": "407473cc901d873d827954b5519e5fcb3f17557b3b9a1fe0348fd024105c58fa"
       },
       "flowDigest": "7c94ad229c3bed1665aed2f84344192878ead09cc988f7359a7b39f414cc0e48"
     },
@@ -1169,12 +1164,12 @@
       },
       "classification": "false_positive",
       "owningFunction": "the_long_form_stars_the_mtime_only_when_the_comparison_said_it_differs",
-      "scannedStartLine": 3810,
+      "scannedStartLine": 3945,
       "scope": "test_fixture",
       "cfgTestEvidence": [
         {
           "path": "src/transfer.rs",
-          "startLine": 3017,
+          "startLine": 3118,
           "scope": "#[cfg(test)] module containing the identified assertion"
         },
         {
@@ -1210,12 +1205,12 @@
       },
       "classification": "false_positive",
       "owningFunction": "the_long_form_stars_the_mtime_only_when_the_comparison_said_it_differs",
-      "scannedStartLine": 3798,
+      "scannedStartLine": 3933,
       "scope": "test_fixture",
       "cfgTestEvidence": [
         {
           "path": "src/transfer.rs",
-          "startLine": 3017,
+          "startLine": 3118,
           "scope": "#[cfg(test)] module containing the identified assertion"
         },
         {
@@ -1251,12 +1246,12 @@
       },
       "classification": "false_positive",
       "owningFunction": "the_long_form_stars_the_mtime_only_when_the_comparison_said_it_differs",
-      "scannedStartLine": 3803,
+      "scannedStartLine": 3938,
       "scope": "test_fixture",
       "cfgTestEvidence": [
         {
           "path": "src/transfer.rs",
-          "startLine": 3017,
+          "startLine": 3118,
           "scope": "#[cfg(test)] module containing the identified assertion"
         },
         {
@@ -1292,12 +1287,12 @@
       },
       "classification": "false_positive",
       "owningFunction": "the_long_form_stars_the_mtime_only_when_the_comparison_said_it_differs",
-      "scannedStartLine": 3817,
+      "scannedStartLine": 3952,
       "scope": "test_fixture",
       "cfgTestEvidence": [
         {
           "path": "src/transfer.rs",
-          "startLine": 3017,
+          "startLine": 3118,
           "scope": "#[cfg(test)] module containing the identified assertion"
         },
         {
@@ -1333,12 +1328,12 @@
       },
       "classification": "false_positive",
       "owningFunction": "the_long_form_stars_the_mtime_only_when_the_comparison_said_it_differs",
-      "scannedStartLine": 3822,
+      "scannedStartLine": 3957,
       "scope": "test_fixture",
       "cfgTestEvidence": [
         {
           "path": "src/transfer.rs",
-          "startLine": 3017,
+          "startLine": 3118,
           "scope": "#[cfg(test)] module containing the identified assertion"
         },
         {
@@ -1374,7 +1369,7 @@
       },
       "classification": "false_positive",
       "owningFunction": "run_scanbatch",
-      "scannedStartLine": 2989,
+      "scannedStartLine": 3090,
       "scope": "non_secret_report_data",
       "nonSecretEvidence": [
         {
@@ -1389,7 +1384,7 @@
       "reason": "The cluster worker emits an item record. The reported source item_line field i.uid is a numeric file-owner identifier, alongside file metadata and optional file SHA-256, not a password or authentication secret.",
       "sourceHashes": {
         "src/cluster.rs": "9ea6f0f76fd2f38379604f5466d363fccc7252013f2d04e75236fd96ba22c87b",
-        "src/main.rs": "d81c22542e62d5bf78c28479bf44ee90638f152f8e465cf458cd63504875e21b"
+        "src/main.rs": "6982350920be5ce6f6a60241d6ec89d112f285cf16611a810fe4c857d1ac4362"
       },
       "flowDigests": [
         "eac36ca23b5a8fe03e4f67fdf56fce30fd9f7431357231df45b14a918a54da84",
@@ -1404,7 +1399,7 @@
       },
       "classification": "false_positive",
       "owningFunction": "run_copy",
-      "scannedStartLine": 1855,
+      "scannedStartLine": 1941,
       "scope": "non_secret_report_data",
       "nonSecretEvidence": [
         {
@@ -1418,12 +1413,11 @@
       ],
       "reason": "The command reports an endpoint after Endpoint::parse succeeds. The reported source no_password_in is a rejection-only validator: authority passwords return a fixed explanatory error before endpoint construction. Its message mentions password/key but carries no password value; Endpoint::display formats endpoint address/path, not authentication material.",
       "sourceHashes": {
-        "src/lib.rs": "2ed8d5ed7ca1ff7b89c3ebd5dac6d52701b1501233087d73ce05ab45010033bc",
-        "src/main.rs": "d81c22542e62d5bf78c28479bf44ee90638f152f8e465cf458cd63504875e21b"
+        "src/lib.rs": "1d402494b50c9ef202a016d7db9f5a71dd9efadcec94a3b82c2362eb12218a44",
+        "src/main.rs": "6982350920be5ce6f6a60241d6ec89d112f285cf16611a810fe4c857d1ac4362"
       },
       "flowDigests": [
-        "7c4433e7cc88026a5d007ea4fd3813e509956aafc5300e2c18fd0cea0fa26ef9",
-        "b02e49e8a392bfdc6c17770fc61b53ae069dd0e1c503dda2be69f0e42d6094e8"
+        "ff93410d28d1c23ca15764e10f5ebd4bdf767ddedc316c997154755f588dc0cb"
       ]
     },
     {
@@ -1434,7 +1428,7 @@
       },
       "classification": "false_positive",
       "owningFunction": "run_isync_estimate",
-      "scannedStartLine": 1966,
+      "scannedStartLine": 2052,
       "scope": "non_secret_report_data",
       "nonSecretEvidence": [
         {
@@ -1444,7 +1438,7 @@
       ],
       "reason": "The estimate reports numeric duration and parallelism. The reported source is a numeric uid filter parsed from a user name, then stored as Option<u32>; neither passwords nor authentication keys enter this timing calculation.",
       "sourceHashes": {
-        "src/main.rs": "d81c22542e62d5bf78c28479bf44ee90638f152f8e465cf458cd63504875e21b"
+        "src/main.rs": "6982350920be5ce6f6a60241d6ec89d112f285cf16611a810fe4c857d1ac4362"
       },
       "flowDigests": [
         "0c9f3543a58c0f79a4d2d01c96c2b976930279b96fa4b26de072db622524154b",
@@ -1459,7 +1453,7 @@
       },
       "classification": "false_positive",
       "owningFunction": "run_scan",
-      "scannedStartLine": 2348,
+      "scannedStartLine": 2445,
       "scope": "non_secret_report_data",
       "nonSecretEvidence": [
         {
@@ -1481,7 +1475,7 @@
       ],
       "reason": "The requested CSV/long listing reports file metadata and owner names. names::parse stores only username field 0 and numeric ID field 2 from passwd/group input; it discards password field 1. NumericNames also only converts a u32 ID to decimal text. No password field or credential reaches this output.",
       "sourceHashes": {
-        "src/main.rs": "d81c22542e62d5bf78c28479bf44ee90638f152f8e465cf458cd63504875e21b",
+        "src/main.rs": "6982350920be5ce6f6a60241d6ec89d112f285cf16611a810fe4c857d1ac4362",
         "src/names.rs": "bd16b39ddf327364db1d169d453483dc444b12080fa3bf9a52b72f8ca5deb0fb",
         "src/ports.rs": "a79f9ffe519e755acb518bacb8dfe982631d77c73c50c7fa5bbf7290765ba342",
         "src/scan.rs": "f1fa812c5096bef09173f93c565e5f95f31f3c9fb101d2faf0f9b24d84b14198"
@@ -1499,7 +1493,7 @@
       },
       "classification": "false_positive",
       "owningFunction": "run_scan",
-      "scannedStartLine": 2346,
+      "scannedStartLine": 2443,
       "scope": "non_secret_report_data",
       "nonSecretEvidence": [
         {
@@ -1521,7 +1515,7 @@
       ],
       "reason": "The requested CSV/long listing reports file metadata and owner names. names::parse stores only username field 0 and numeric ID field 2 from passwd/group input; it discards password field 1. NumericNames also only converts a u32 ID to decimal text. No password field or credential reaches this output.",
       "sourceHashes": {
-        "src/main.rs": "d81c22542e62d5bf78c28479bf44ee90638f152f8e465cf458cd63504875e21b",
+        "src/main.rs": "6982350920be5ce6f6a60241d6ec89d112f285cf16611a810fe4c857d1ac4362",
         "src/names.rs": "bd16b39ddf327364db1d169d453483dc444b12080fa3bf9a52b72f8ca5deb0fb",
         "src/ports.rs": "a79f9ffe519e755acb518bacb8dfe982631d77c73c50c7fa5bbf7290765ba342",
         "src/scan.rs": "f1fa812c5096bef09173f93c565e5f95f31f3c9fb101d2faf0f9b24d84b14198"
@@ -1539,7 +1533,7 @@
       },
       "classification": "false_positive",
       "owningFunction": "run_diag",
-      "scannedStartLine": 3067,
+      "scannedStartLine": 3168,
       "scope": "non_secret_report_data",
       "nonSecretEvidence": [
         {
@@ -1553,12 +1547,11 @@
       ],
       "reason": "The command reports an endpoint after Endpoint::parse succeeds. The reported source no_password_in is a rejection-only validator: authority passwords return a fixed explanatory error before endpoint construction. Its message mentions password/key but carries no password value; Endpoint::display formats endpoint address/path, not authentication material.",
       "sourceHashes": {
-        "src/lib.rs": "2ed8d5ed7ca1ff7b89c3ebd5dac6d52701b1501233087d73ce05ab45010033bc",
-        "src/main.rs": "d81c22542e62d5bf78c28479bf44ee90638f152f8e465cf458cd63504875e21b"
+        "src/lib.rs": "1d402494b50c9ef202a016d7db9f5a71dd9efadcec94a3b82c2362eb12218a44",
+        "src/main.rs": "6982350920be5ce6f6a60241d6ec89d112f285cf16611a810fe4c857d1ac4362"
       },
       "flowDigests": [
-        "a7090ba39093c008c21815c09d8f282685acaa21da13cef804d98a893ca0f4ff",
-        "4159291e684ce37c84cda533b683060d0f8daa6da2597e54f587d12e1e403054"
+        "938124ed508f171f921527b5a360fb5393e98ca2a3220ff3e503767cf90f98fe"
       ]
     },
     {
@@ -1569,7 +1562,7 @@
       },
       "classification": "false_positive",
       "owningFunction": "run_diag",
-      "scannedStartLine": 3153,
+      "scannedStartLine": 3254,
       "scope": "non_secret_report_data",
       "nonSecretEvidence": [
         {
@@ -1583,12 +1576,11 @@
       ],
       "reason": "The command reports an endpoint after Endpoint::parse succeeds. The reported source no_password_in is a rejection-only validator: authority passwords return a fixed explanatory error before endpoint construction. Its message mentions password/key but carries no password value; Endpoint::display formats endpoint address/path, not authentication material.",
       "sourceHashes": {
-        "src/lib.rs": "2ed8d5ed7ca1ff7b89c3ebd5dac6d52701b1501233087d73ce05ab45010033bc",
-        "src/main.rs": "d81c22542e62d5bf78c28479bf44ee90638f152f8e465cf458cd63504875e21b"
+        "src/lib.rs": "1d402494b50c9ef202a016d7db9f5a71dd9efadcec94a3b82c2362eb12218a44",
+        "src/main.rs": "6982350920be5ce6f6a60241d6ec89d112f285cf16611a810fe4c857d1ac4362"
       },
       "flowDigests": [
-        "f213f3f05f12ddb37f19430387f202b1bc02d3302ddc50cf6abf5d65b78ad86b",
-        "688784d9898c467d93bb308f9aa0e51d3703026b0d1162c27bf9bd204a69f83f"
+        "8aff9e9d8ff52c7a60ea03097cc7581643607f6752fefa300af1c519ee8a4f46"
       ]
     },
     {
@@ -1599,7 +1591,7 @@
       },
       "classification": "false_positive",
       "owningFunction": "run_diag",
-      "scannedStartLine": 3322,
+      "scannedStartLine": 3423,
       "scope": "non_secret_report_data",
       "nonSecretEvidence": [
         {
@@ -1621,7 +1613,7 @@
       ],
       "reason": "The requested CSV/long listing reports file metadata and owner names. names::parse stores only username field 0 and numeric ID field 2 from passwd/group input; it discards password field 1. NumericNames also only converts a u32 ID to decimal text. No password field or credential reaches this output.",
       "sourceHashes": {
-        "src/main.rs": "d81c22542e62d5bf78c28479bf44ee90638f152f8e465cf458cd63504875e21b",
+        "src/main.rs": "6982350920be5ce6f6a60241d6ec89d112f285cf16611a810fe4c857d1ac4362",
         "src/names.rs": "bd16b39ddf327364db1d169d453483dc444b12080fa3bf9a52b72f8ca5deb0fb",
         "src/ports.rs": "a79f9ffe519e755acb518bacb8dfe982631d77c73c50c7fa5bbf7290765ba342",
         "src/scan.rs": "f1fa812c5096bef09173f93c565e5f95f31f3c9fb101d2faf0f9b24d84b14198"
@@ -1629,6 +1621,502 @@
       "flowDigests": [
         "a3c7d46c8bb87813f689ebe8b0cdedfd22c71d5919526f712b22545cf6cb9a3a",
         "bb3ef21869337b25f6bcd3b119864738e74a225af034b8fac4b1684bec823323"
+      ]
+    },
+    {
+      "ruleId": "rust/hard-coded-cryptographic-value",
+      "path": "src/smb/ntlm.rs",
+      "partialFingerprints": {
+        "primaryLocationLineHash": "132febb9539274b0:1"
+      },
+      "scannedStartLine": 135,
+      "classification": "false_positive",
+      "owningFunction": "hmac_md5_matches_rfc_2202_including_the_long_key_case",
+      "reason": "Public RFC 2202 HMAC-MD5 test-case keys reproduce the published MACs; these are standard test vectors, not operational credentials. This specific finding is not reachable in a non-test build.",
+      "cfgTestEvidence": [
+        {
+          "path": "src/smb/ntlm.rs",
+          "line": 67,
+          "attribute": "#[cfg(test)]",
+          "scope": "mod tests"
+        },
+        {
+          "path": "src/smb/ntlm.rs",
+          "line": 129,
+          "scope": "tests::hmac_md5_matches_rfc_2202_including_the_long_key_case"
+        }
+      ],
+      "sourceHashes": {
+        "src/smb/ntlm.rs": "f3f9e40decd92b7ed00542478f4d16bb8bde2b267a0e931545ab63959b9cc0b1"
+      },
+      "scope": "test_fixture",
+      "flowDigests": [
+        "1090c28f036a2573cefc2817ea66ddf5f11ea598e139cd6c8b33a9b55fae7f9d"
+      ]
+    },
+    {
+      "ruleId": "rust/hard-coded-cryptographic-value",
+      "path": "src/sha256.rs",
+      "partialFingerprints": {
+        "primaryLocationLineHash": "883ad2115a472a48:1"
+      },
+      "scannedStartLine": 125,
+      "classification": "false_positive",
+      "owningFunction": "hmac_sha256_matches_rfc_4231_including_the_long_key_case",
+      "reason": "Public RFC 4231 HMAC-SHA256 test-case keys (0x0b repeated, 0xaa repeated) reproduce the published MACs; these are standard test vectors, not operational keys. This specific finding is not reachable in a non-test build.",
+      "cfgTestEvidence": [
+        {
+          "path": "src/sha256.rs",
+          "line": 92,
+          "attribute": "#[cfg(test)]",
+          "scope": "mod tests"
+        },
+        {
+          "path": "src/sha256.rs",
+          "line": 121,
+          "scope": "tests::hmac_sha256_matches_rfc_4231_including_the_long_key_case"
+        }
+      ],
+      "sourceHashes": {
+        "src/sha256.rs": "786cefef51b87896c94145eefd1f3b5b176cbdc6a499cc1f46b6de23d310ac25"
+      },
+      "scope": "test_fixture",
+      "flowDigests": [
+        "76ba679c722da9324c4f9a8ddc310a0c214aedf04eb5eebd9307f0dfcbcf4403"
+      ]
+    },
+    {
+      "ruleId": "rust/hard-coded-cryptographic-value",
+      "path": "src/sha256.rs",
+      "partialFingerprints": {
+        "primaryLocationLineHash": "cd0e1feceac748f2:1"
+      },
+      "scannedStartLine": 130,
+      "classification": "false_positive",
+      "owningFunction": "hmac_sha256_matches_rfc_4231_including_the_long_key_case",
+      "reason": "Public RFC 4231 HMAC-SHA256 test-case keys (0x0b repeated, 0xaa repeated) reproduce the published MACs; these are standard test vectors, not operational keys. This specific finding is not reachable in a non-test build.",
+      "cfgTestEvidence": [
+        {
+          "path": "src/sha256.rs",
+          "line": 92,
+          "attribute": "#[cfg(test)]",
+          "scope": "mod tests"
+        },
+        {
+          "path": "src/sha256.rs",
+          "line": 121,
+          "scope": "tests::hmac_sha256_matches_rfc_4231_including_the_long_key_case"
+        }
+      ],
+      "sourceHashes": {
+        "src/sha256.rs": "786cefef51b87896c94145eefd1f3b5b176cbdc6a499cc1f46b6de23d310ac25"
+      },
+      "scope": "test_fixture",
+      "flowDigests": [
+        "85a9fe98e141e50007fa9462d13b8ec42d9dc7ce726358be053380188b0f92e7"
+      ]
+    },
+    {
+      "ruleId": "rust/hard-coded-cryptographic-value",
+      "path": "src/smb/ntlm.rs",
+      "partialFingerprints": {
+        "primaryLocationLineHash": "636010ca3f94d90c:1"
+      },
+      "scannedStartLine": 131,
+      "classification": "false_positive",
+      "owningFunction": "hmac_md5_matches_rfc_2202_including_the_long_key_case",
+      "reason": "Public RFC 2202 HMAC-MD5 test-case keys reproduce the published MACs; these are standard test vectors, not operational credentials. This specific finding is not reachable in a non-test build.",
+      "cfgTestEvidence": [
+        {
+          "path": "src/smb/ntlm.rs",
+          "line": 67,
+          "attribute": "#[cfg(test)]",
+          "scope": "mod tests"
+        },
+        {
+          "path": "src/smb/ntlm.rs",
+          "line": 129,
+          "scope": "tests::hmac_md5_matches_rfc_2202_including_the_long_key_case"
+        }
+      ],
+      "sourceHashes": {
+        "src/smb/ntlm.rs": "f3f9e40decd92b7ed00542478f4d16bb8bde2b267a0e931545ab63959b9cc0b1"
+      },
+      "scope": "test_fixture",
+      "flowDigests": [
+        "720691c9e901a639631f6af8d60b6bed40b7edbba2ecd961cda6b5e9a7d87ccf"
+      ]
+    },
+    {
+      "ruleId": "rust/hard-coded-cryptographic-value",
+      "path": "src/smb/ntlm.rs",
+      "partialFingerprints": {
+        "primaryLocationLineHash": "1abadf46bd6d2808:1"
+      },
+      "scannedStartLine": 139,
+      "classification": "false_positive",
+      "owningFunction": "hmac_md5_matches_rfc_2202_including_the_long_key_case",
+      "reason": "Public RFC 2202 HMAC-MD5 test-case keys reproduce the published MACs; these are standard test vectors, not operational credentials. This specific finding is not reachable in a non-test build.",
+      "cfgTestEvidence": [
+        {
+          "path": "src/smb/ntlm.rs",
+          "line": 67,
+          "attribute": "#[cfg(test)]",
+          "scope": "mod tests"
+        },
+        {
+          "path": "src/smb/ntlm.rs",
+          "line": 129,
+          "scope": "tests::hmac_md5_matches_rfc_2202_including_the_long_key_case"
+        }
+      ],
+      "sourceHashes": {
+        "src/smb/ntlm.rs": "f3f9e40decd92b7ed00542478f4d16bb8bde2b267a0e931545ab63959b9cc0b1"
+      },
+      "scope": "test_fixture",
+      "flowDigests": [
+        "b9aa19b70c65e0d909ffc055447beda4960bc8d35abfcce2f7b83f11e07d406b"
+      ]
+    },
+    {
+      "ruleId": "rust/hard-coded-cryptographic-value",
+      "path": "src/smb/ntlm.rs",
+      "partialFingerprints": {
+        "primaryLocationLineHash": "119f137bbb61751a:1"
+      },
+      "scannedStartLine": 143,
+      "classification": "false_positive",
+      "owningFunction": "hmac_md5_matches_rfc_2202_including_the_long_key_case",
+      "reason": "Public RFC 2202 HMAC-MD5 test-case keys reproduce the published MACs; these are standard test vectors, not operational credentials. This specific finding is not reachable in a non-test build.",
+      "cfgTestEvidence": [
+        {
+          "path": "src/smb/ntlm.rs",
+          "line": 67,
+          "attribute": "#[cfg(test)]",
+          "scope": "mod tests"
+        },
+        {
+          "path": "src/smb/ntlm.rs",
+          "line": 129,
+          "scope": "tests::hmac_md5_matches_rfc_2202_including_the_long_key_case"
+        }
+      ],
+      "sourceHashes": {
+        "src/smb/ntlm.rs": "f3f9e40decd92b7ed00542478f4d16bb8bde2b267a0e931545ab63959b9cc0b1"
+      },
+      "scope": "test_fixture",
+      "flowDigests": [
+        "1e361b7479ee8f4fb782d313aaa7a33d45fb3158d5be6edd778fe280be49b4c1"
+      ]
+    },
+    {
+      "ruleId": "rust/hard-coded-cryptographic-value",
+      "path": "src/smb/ntlm.rs",
+      "partialFingerprints": {
+        "primaryLocationLineHash": "c2f0c9b71364679e:1"
+      },
+      "scannedStartLine": 149,
+      "classification": "false_positive",
+      "owningFunction": "hmac_md5_matches_rfc_2202_including_the_long_key_case",
+      "reason": "Public RFC 2202 HMAC-MD5 test-case keys reproduce the published MACs; these are standard test vectors, not operational credentials. This specific finding is not reachable in a non-test build.",
+      "cfgTestEvidence": [
+        {
+          "path": "src/smb/ntlm.rs",
+          "line": 67,
+          "attribute": "#[cfg(test)]",
+          "scope": "mod tests"
+        },
+        {
+          "path": "src/smb/ntlm.rs",
+          "line": 129,
+          "scope": "tests::hmac_md5_matches_rfc_2202_including_the_long_key_case"
+        }
+      ],
+      "sourceHashes": {
+        "src/smb/ntlm.rs": "f3f9e40decd92b7ed00542478f4d16bb8bde2b267a0e931545ab63959b9cc0b1"
+      },
+      "scope": "test_fixture",
+      "flowDigests": [
+        "36d1d07769200bd1688acdc14a2bb84dd4319760a9b7e7210ae631f0c5fcebde"
+      ]
+    },
+    {
+      "ruleId": "rust/hard-coded-cryptographic-value",
+      "path": "src/smb/ntlm.rs",
+      "partialFingerprints": {
+        "primaryLocationLineHash": "fc210be29eafc313:1"
+      },
+      "scannedStartLine": 156,
+      "classification": "false_positive",
+      "owningFunction": "hmac_md5_matches_rfc_2202_including_the_long_key_case",
+      "reason": "Public RFC 2202 HMAC-MD5 test-case keys reproduce the published MACs; these are standard test vectors, not operational credentials. This specific finding is not reachable in a non-test build.",
+      "cfgTestEvidence": [
+        {
+          "path": "src/smb/ntlm.rs",
+          "line": 67,
+          "attribute": "#[cfg(test)]",
+          "scope": "mod tests"
+        },
+        {
+          "path": "src/smb/ntlm.rs",
+          "line": 129,
+          "scope": "tests::hmac_md5_matches_rfc_2202_including_the_long_key_case"
+        }
+      ],
+      "sourceHashes": {
+        "src/smb/ntlm.rs": "f3f9e40decd92b7ed00542478f4d16bb8bde2b267a0e931545ab63959b9cc0b1"
+      },
+      "scope": "test_fixture",
+      "flowDigests": [
+        "5338e1543e57acc0af98459706b804e195bcb4258d0fc48716d286d2585079d8"
+      ]
+    },
+    {
+      "ruleId": "rust/hard-coded-cryptographic-value",
+      "path": "src/smb/sign.rs",
+      "partialFingerprints": {
+        "primaryLocationLineHash": "a2081090df36deec:1"
+      },
+      "scannedStartLine": 234,
+      "classification": "false_positive",
+      "owningFunction": "a_real_signature_is_the_crate_cmac_exactly_when_the_dialect_asks_for_it",
+      "reason": "Fixed test keys (FIPS-197 C.1, RFC 4493 section 4, independent-implementation signing vectors, or arbitrary keys for signing round-trip and differential checks) pin AES, CMAC and SMB signing to published or independently computed outputs; they are test inputs, not operational keys. This specific finding is not reachable in a non-test build.",
+      "cfgTestEvidence": [
+        {
+          "path": "src/smb/sign.rs",
+          "line": 173,
+          "attribute": "#[cfg(test)]",
+          "scope": "mod tests"
+        },
+        {
+          "path": "src/smb/sign.rs",
+          "line": 222,
+          "scope": "tests::a_real_signature_is_the_crate_cmac_exactly_when_the_dialect_asks_for_it"
+        }
+      ],
+      "sourceHashes": {
+        "src/smb/sign.rs": "bd3b22fec39ecb0cf17263a7c51c45c53b6a4231d163a05d5f54f06786ba5ab9"
+      },
+      "scope": "test_fixture",
+      "flowDigests": [
+        "a31f085c47fee3706027bde757291414a5b1f9cd4269db20a31c65f0f40c2e6c"
+      ]
+    },
+    {
+      "ruleId": "rust/hard-coded-cryptographic-value",
+      "path": "src/smb/sign.rs",
+      "partialFingerprints": {
+        "primaryLocationLineHash": "befcbc2010bd4883:1"
+      },
+      "scannedStartLine": 390,
+      "classification": "false_positive",
+      "owningFunction": "a_signature_zeroes_its_own_field_and_follows_the_dialect",
+      "reason": "Fixed test keys (FIPS-197 C.1, RFC 4493 section 4, independent-implementation signing vectors, or arbitrary keys for signing round-trip and differential checks) pin AES, CMAC and SMB signing to published or independently computed outputs; they are test inputs, not operational keys. This specific finding is not reachable in a non-test build.",
+      "cfgTestEvidence": [
+        {
+          "path": "src/smb/sign.rs",
+          "line": 173,
+          "attribute": "#[cfg(test)]",
+          "scope": "mod tests"
+        },
+        {
+          "path": "src/smb/sign.rs",
+          "line": 389,
+          "scope": "tests::a_signature_zeroes_its_own_field_and_follows_the_dialect"
+        }
+      ],
+      "sourceHashes": {
+        "src/smb/sign.rs": "bd3b22fec39ecb0cf17263a7c51c45c53b6a4231d163a05d5f54f06786ba5ab9"
+      },
+      "scope": "test_fixture",
+      "flowDigests": [
+        "6da41e7b737245051d8bf48d37f1a7ee1d99529fabaea7f5db5ba2670697c69d"
+      ]
+    },
+    {
+      "ruleId": "rust/hard-coded-cryptographic-value",
+      "path": "src/smb/sign.rs",
+      "partialFingerprints": {
+        "primaryLocationLineHash": "90e24fef49a14c8c:1"
+      },
+      "scannedStartLine": 422,
+      "classification": "false_positive",
+      "owningFunction": "the_signing_key_is_derived_only_for_the_dialect_that_asks_for_it",
+      "reason": "Fixed test keys (FIPS-197 C.1, RFC 4493 section 4, independent-implementation signing vectors, or arbitrary keys for signing round-trip and differential checks) pin AES, CMAC and SMB signing to published or independently computed outputs; they are test inputs, not operational keys. This specific finding is not reachable in a non-test build.",
+      "cfgTestEvidence": [
+        {
+          "path": "src/smb/sign.rs",
+          "line": 173,
+          "attribute": "#[cfg(test)]",
+          "scope": "mod tests"
+        },
+        {
+          "path": "src/smb/sign.rs",
+          "line": 421,
+          "scope": "tests::the_signing_key_is_derived_only_for_the_dialect_that_asks_for_it"
+        }
+      ],
+      "sourceHashes": {
+        "src/smb/sign.rs": "bd3b22fec39ecb0cf17263a7c51c45c53b6a4231d163a05d5f54f06786ba5ab9"
+      },
+      "scope": "test_fixture",
+      "flowDigests": [
+        "c19b42df6905cf73607b96f63dd2335eca03bcc3981cadf8d3efaae37f7350bc"
+      ]
+    },
+    {
+      "ruleId": "rust/hard-coded-cryptographic-value",
+      "path": "src/smb/sign.rs",
+      "partialFingerprints": {
+        "primaryLocationLineHash": "deab02c23ec4bc70:1"
+      },
+      "scannedStartLine": 454,
+      "classification": "false_positive",
+      "owningFunction": "a_dialect_this_code_cannot_key_is_refused_rather_than_guessed",
+      "reason": "Fixed test keys (FIPS-197 C.1, RFC 4493 section 4, independent-implementation signing vectors, or arbitrary keys for signing round-trip and differential checks) pin AES, CMAC and SMB signing to published or independently computed outputs; they are test inputs, not operational keys. This specific finding is not reachable in a non-test build.",
+      "cfgTestEvidence": [
+        {
+          "path": "src/smb/sign.rs",
+          "line": 173,
+          "attribute": "#[cfg(test)]",
+          "scope": "mod tests"
+        },
+        {
+          "path": "src/smb/sign.rs",
+          "line": 453,
+          "scope": "tests::a_dialect_this_code_cannot_key_is_refused_rather_than_guessed"
+        }
+      ],
+      "sourceHashes": {
+        "src/smb/sign.rs": "bd3b22fec39ecb0cf17263a7c51c45c53b6a4231d163a05d5f54f06786ba5ab9"
+      },
+      "scope": "test_fixture",
+      "flowDigests": [
+        "d6db287a04f6d821442da9f23307041d1493d261b4ace3bb468127e96bd50114"
+      ]
+    },
+    {
+      "ruleId": "rust/hard-coded-cryptographic-value",
+      "path": "src/smb/sign.rs",
+      "partialFingerprints": {
+        "primaryLocationLineHash": "8cc433825102f578:1"
+      },
+      "scannedStartLine": 495,
+      "classification": "false_positive",
+      "owningFunction": "verify_accepts_its_own_signature_and_refuses_every_alteration",
+      "reason": "Fixed test keys (FIPS-197 C.1, RFC 4493 section 4, independent-implementation signing vectors, or arbitrary keys for signing round-trip and differential checks) pin AES, CMAC and SMB signing to published or independently computed outputs; they are test inputs, not operational keys. This specific finding is not reachable in a non-test build.",
+      "cfgTestEvidence": [
+        {
+          "path": "src/smb/sign.rs",
+          "line": 173,
+          "attribute": "#[cfg(test)]",
+          "scope": "mod tests"
+        },
+        {
+          "path": "src/smb/sign.rs",
+          "line": 494,
+          "scope": "tests::verify_accepts_its_own_signature_and_refuses_every_alteration"
+        }
+      ],
+      "sourceHashes": {
+        "src/smb/sign.rs": "bd3b22fec39ecb0cf17263a7c51c45c53b6a4231d163a05d5f54f06786ba5ab9"
+      },
+      "scope": "test_fixture",
+      "flowDigests": [
+        "d19e2f916e2223f2762a601740f3342a65195530d64b7fc11844ea511eb381a3"
+      ]
+    },
+    {
+      "ruleId": "rust/hard-coded-cryptographic-value",
+      "path": "src/smb/sign.rs",
+      "partialFingerprints": {
+        "primaryLocationLineHash": "9d831b06c809a3d8:1"
+      },
+      "scannedStartLine": 578,
+      "classification": "false_positive",
+      "owningFunction": "the_kdf_input_has_both_zero_bytes_between_the_label_and_the_context",
+      "reason": "Fixed test keys (FIPS-197 C.1, RFC 4493 section 4, independent-implementation signing vectors, or arbitrary keys for signing round-trip and differential checks) pin AES, CMAC and SMB signing to published or independently computed outputs; they are test inputs, not operational keys. This specific finding is not reachable in a non-test build.",
+      "cfgTestEvidence": [
+        {
+          "path": "src/smb/sign.rs",
+          "line": 173,
+          "attribute": "#[cfg(test)]",
+          "scope": "mod tests"
+        },
+        {
+          "path": "src/smb/sign.rs",
+          "line": 553,
+          "scope": "tests::the_kdf_input_has_both_zero_bytes_between_the_label_and_the_context"
+        }
+      ],
+      "sourceHashes": {
+        "src/smb/sign.rs": "bd3b22fec39ecb0cf17263a7c51c45c53b6a4231d163a05d5f54f06786ba5ab9"
+      },
+      "scope": "test_fixture",
+      "flowDigests": [
+        "e3a811b7f6bab3223ab3d3db8baf242dc9e9945c93273d55c9a2151f41469d4b"
+      ]
+    },
+    {
+      "ruleId": "rust/hard-coded-cryptographic-value",
+      "path": "src/smb/sign.rs",
+      "partialFingerprints": {
+        "primaryLocationLineHash": "305431e2c062acfc:1"
+      },
+      "scannedStartLine": 189,
+      "classification": "false_positive",
+      "owningFunction": "the_aes_block_matches_the_fips_197_vector",
+      "reason": "Fixed test keys (FIPS-197 C.1, RFC 4493 section 4, independent-implementation signing vectors, or arbitrary keys for signing round-trip and differential checks) pin AES, CMAC and SMB signing to published or independently computed outputs; they are test inputs, not operational keys. This specific finding is not reachable in a non-test build.",
+      "cfgTestEvidence": [
+        {
+          "path": "src/smb/sign.rs",
+          "line": 173,
+          "attribute": "#[cfg(test)]",
+          "scope": "mod tests"
+        },
+        {
+          "path": "src/smb/sign.rs",
+          "line": 187,
+          "scope": "tests::the_aes_block_matches_the_fips_197_vector"
+        }
+      ],
+      "sourceHashes": {
+        "src/smb/sign.rs": "bd3b22fec39ecb0cf17263a7c51c45c53b6a4231d163a05d5f54f06786ba5ab9"
+      },
+      "scope": "test_fixture",
+      "flowDigests": [
+        "bec3793dff269383b45e0ac941eb081c98233cc23de5ad12df3c0fde15be89d6"
+      ]
+    },
+    {
+      "ruleId": "rust/hard-coded-cryptographic-value",
+      "path": "src/smb/sign.rs",
+      "partialFingerprints": {
+        "primaryLocationLineHash": "606c7cfd920f5df0:1"
+      },
+      "scannedStartLine": 345,
+      "classification": "false_positive",
+      "owningFunction": "aes_cmac_matches_all_four_rfc_4493_vectors",
+      "reason": "Fixed test keys (FIPS-197 C.1, RFC 4493 section 4, independent-implementation signing vectors, or arbitrary keys for signing round-trip and differential checks) pin AES, CMAC and SMB signing to published or independently computed outputs; they are test inputs, not operational keys. This specific finding is not reachable in a non-test build.",
+      "cfgTestEvidence": [
+        {
+          "path": "src/smb/sign.rs",
+          "line": 173,
+          "attribute": "#[cfg(test)]",
+          "scope": "mod tests"
+        },
+        {
+          "path": "src/smb/sign.rs",
+          "line": 344,
+          "scope": "tests::aes_cmac_matches_all_four_rfc_4493_vectors"
+        }
+      ],
+      "sourceHashes": {
+        "src/smb/sign.rs": "bd3b22fec39ecb0cf17263a7c51c45c53b6a4231d163a05d5f54f06786ba5ab9"
+      },
+      "scope": "test_fixture",
+      "flowDigests": [
+        "6a7581010e089ecb81b60f8ab9b4a113fb422704fe1580a52cbc59d0650a6098"
       ]
     }
   ]

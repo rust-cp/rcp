@@ -37,7 +37,10 @@ else. Its catalog (`~/.local/state/rcp/catalog` unless `-catalog`, `RCP_CATALOG`
 The signed runtime image is public at `ghcr.io/rust-cp/rcp`, tagged with the version. It
 runs as UID/GID 10001 with `/state` as its home and catalog, and has no shell or package
 manager (`container/README.md` describes it). Pull it, verify it, and run it with the data
-mounted:
+mounted. Verifying needs cosign v3 or later. The release workflow signs with cosign v3,
+which stores signatures and attestations in the newer Sigstore bundle format, attached to
+the image as OCI referrers. cosign v2.x does not find them there and reports "no signatures
+found" for every published image, 0.1.1 and 0.1.2 included.
 
 ```sh
 docker pull ghcr.io/rust-cp/rcp:X.Y.Z

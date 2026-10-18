@@ -455,7 +455,10 @@ impl HdfsTree {
             cookies: Mutex::new(BTreeMap::new()),
             #[cfg(feature = "rustls")]
             tls: if origin.starts_with("https://") {
-                Some(crate::net::tls::config(settings.noverify)?)
+                Some(crate::net::tls::config(
+                    settings.noverify,
+                    crate::net::tls::HDFS_NOVERIFY,
+                )?)
             } else {
                 None
             },

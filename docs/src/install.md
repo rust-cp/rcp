@@ -32,6 +32,34 @@ Uninstall by removing that file: `rm "${DESTDIR}${PREFIX}/bin/rcp"`. rcp install
 else. Its catalog (`~/.local/state/rcp/catalog` unless `-catalog`, `RCP_CATALOG` or
 `XDG_STATE_HOME` says otherwise; see [The catalog](guide/catalog.md)) is yours to keep or delete.
 
+## Container image
+
+The signed runtime image is public at `ghcr.io/rust-cp/rcp`, tagged with the version. It
+runs as UID/GID 10001 with `/state` as its home and catalog, and has no shell or package
+manager (`container/README.md` describes it). Pull it, verify it, and run it with the data
+mounted:
+
+```sh
+docker pull ghcr.io/rust-cp/rcp:X.Y.Z
+cosign verify ghcr.io/rust-cp/rcp:X.Y.Z \
+  --certificate-identity-regexp '^https://github.com/rust-cp/rcp/\.github/workflows/release\.yml@' \
+  --certificate-oidc-issuer https://token.actions.githubusercontent.com
+docker run --rm --read-only --cap-drop ALL --security-opt no-new-privileges \
+  --tmpfs /tmp:rw,noexec,nosuid,nodev,size=16m \
+  --mount type=volume,source=rcp-state,target=/state \
+  --mount type=bind,source=/data,target=/data,readonly \
+  --mount type=bind,source=/backup,target=/backup \
+  ghcr.io/rust-cp/rcp:X.Y.Z copy -noown /data /backup
+```
+
+`podman` takes the same arguments. The bind mounts must be readable (and `/backup`
+writable) by UID 10001, or add `--user "$(id -u):$(id -g)"`. Uninstall with
+`docker rmi ghcr.io/rust-cp/rcp:X.Y.Z` and `docker volume rm rcp-state`.
+
+The bare binary is also published as an OCI artifact at `ghcr.io/rust-cp/rcp-binary`, for
+hosts that pull through a registry: `oras pull ghcr.io/rust-cp/rcp-binary:X.Y.Z` fetches
+`rcp` and `SHA256SUMS` ([Releases](releases.md)).
+
 ## With Cargo
 
 From source, with Cargo's own install convention (`--root`, or `CARGO_INSTALL_ROOT`, picks
@@ -42,6 +70,12 @@ cargo install --locked --git https://github.com/rust-cp/rcp --tag vX.Y.Z        
 cargo install --locked --git https://github.com/rust-cp/rcp --tag vX.Y.Z --features rustls
 cargo uninstall rcp
 ```
+
+**TLS needs `--features rustls`.** A source build without it has no TLS: every TLS
+endpoint (`https://`, `davs://`, `rcps://`, and S3, OCI or WebHDFS over https) is refused
+with an error naming the feature, and only their plaintext forms work. The release archive, the container image and the registry binary are all built with
+`rustls`; a source build that talks to anything over a network you do not control should be
+too. `rcp version` lists what a build supports.
 
 The release profile strips symbols. For a build that keeps debugging information, Cargo's
 profile variables apply: `CARGO_PROFILE_RELEASE_STRIP=none CARGO_PROFILE_RELEASE_DEBUG=true`.

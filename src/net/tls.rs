@@ -1,7 +1,7 @@
 //! TLS for `https://` endpoints, behind the `tls` feature: rustls with the ring provider,
 //! trust roots read from the file the environment names (`AWS_CA_BUNDLE`, the boto name, or
-//! `SSL_CERT_FILE`) or from the distribution's bundle, and `-s3.noverify`, which is
-//! printed as the warning it deserves.
+//! `SSL_CERT_FILE`) or from the distribution's bundle, and each endpoint's `-*.noverify`,
+//! which is printed as the warning it deserves, naming the option that turned it on.
 
 use std::io;
 use std::net::TcpStream;
@@ -105,20 +105,39 @@ impl ServerCertVerifier for NoVerify {
     }
 }
 
-/// A client configuration: the trust roots, or none at all when `noverify`.
-pub fn config(noverify: bool) -> io::Result<Arc<ClientConfig>> {
+/// The option that turns certificate verification off, per endpoint kind. HDFS has no
+/// option of its own and follows `-s3.noverify`; OCI follows either of its two.
+pub const S3_NOVERIFY: &str = "-s3.noverify";
+pub const HDFS_NOVERIFY: &str = "-s3.noverify";
+pub const DAV_NOVERIFY: &str = "-dav.noverify";
+pub const HTTP_NOVERIFY: &str = "-http.noverify";
+pub const OCI_NOVERIFY: &str = "-oci.noverify (or -s3.noverify)";
+
+/// What a run with verification off prints, naming the option that turned it off.
+pub fn noverify_warning(flag: &str) -> String {
+    format!("WARN: {flag}: the server's certificate is not checked; the connection is private only against a passive observer")
+}
+
+fn no_bundle_message(flag: &str) -> String {
+    format!("no CA bundle found; set AWS_CA_BUNDLE to a PEM file (or {flag} to skip verification)")
+}
+
+/// A client configuration: the trust roots, or none at all when `noverify`. `flag` is the
+/// option that controls verification for the calling endpoint, one of the constants above.
+pub fn config(noverify: bool, flag: &str) -> io::Result<Arc<ClientConfig>> {
     let provider = Arc::new(rustls::crypto::ring::default_provider());
     let builder = ClientConfig::builder_with_provider(provider.clone())
         .with_safe_default_protocol_versions()
         .map_err(io::Error::other)?;
     let cfg = if noverify {
-        eprintln!("WARN: -s3.noverify: the server's certificate is not checked; the connection is private only against a passive observer");
+        eprintln!("{}", noverify_warning(flag));
         builder
             .dangerous()
             .with_custom_certificate_verifier(Arc::new(NoVerify(provider)))
             .with_no_client_auth()
     } else {
-        let path = bundle_path().ok_or_else(|| io::Error::new(io::ErrorKind::NotFound, "no CA bundle found; set AWS_CA_BUNDLE to a PEM file (or -s3.noverify to skip verification)"))?;
+        let path = bundle_path()
+            .ok_or_else(|| io::Error::new(io::ErrorKind::NotFound, no_bundle_message(flag)))?;
         let text = std::fs::read_to_string(&path)
             .map_err(|e| io::Error::new(e.kind(), format!("{}: {e}", path.display())))?;
         let certs = pem_certificates(&text);
@@ -158,4 +177,47 @@ pub fn connect(cfg: &Arc<ClientConfig>, host: &str, tcp: TcpStream) -> io::Resul
         .complete_io(&mut stream.sock)
         .map_err(|e| io::Error::new(e.kind(), format!("TLS to {host}: {e}")))?;
     Ok(stream)
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn the_noverify_warning_names_each_endpoints_own_option() {
+        for (flag, option) in [
+            (S3_NOVERIFY, "-s3.noverify"),
+            (HDFS_NOVERIFY, "-s3.noverify"),
+            (DAV_NOVERIFY, "-dav.noverify"),
+            (HTTP_NOVERIFY, "-http.noverify"),
+            (OCI_NOVERIFY, "-oci.noverify"),
+        ] {
+            let warning = noverify_warning(flag);
+            assert!(warning.starts_with(&format!("WARN: {option}")), "{warning}");
+            assert!(no_bundle_message(flag).contains(option));
+        }
+        // the control: a warning for WebDAV does not send the reader to the S3 option
+        assert!(!noverify_warning(DAV_NOVERIFY).contains("-s3."));
+        assert!(!noverify_warning(HTTP_NOVERIFY).contains("-s3."));
+    }
+
+    #[test]
+    fn every_named_option_is_a_real_option() {
+        for flag in [
+            S3_NOVERIFY,
+            HDFS_NOVERIFY,
+            DAV_NOVERIFY,
+            HTTP_NOVERIFY,
+            OCI_NOVERIFY,
+        ] {
+            for word in flag.split([' ', '(', ')']) {
+                if let Some(name) = word.strip_prefix('-') {
+                    assert!(
+                        crate::describe::capability_of(name).is_some(),
+                        "{name} is not an rcp option"
+                    );
+                }
+            }
+        }
+    }
 }

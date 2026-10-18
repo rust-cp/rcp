@@ -138,7 +138,10 @@ fn target(scheme: Scheme, host: &str, port: u16, noverify: bool) -> io::Result<T
         proxy: proxy_from_env(scheme, host),
         #[cfg(feature = "rustls")]
         tls: if scheme == Scheme::Https {
-            Some(crate::net::tls::config(noverify)?)
+            Some(crate::net::tls::config(
+                noverify,
+                crate::net::tls::OCI_NOVERIFY,
+            )?)
         } else {
             None
         },

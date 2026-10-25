@@ -16,10 +16,11 @@
 
 ## From a release archive
 
-Each release on the [releases page](https://github.com/rust-cp/rcp/releases) carries an
-x86-64 GNU/Linux archive, `SHA256SUMS`, an SPDX SBOM, a Sigstore signature and build
-provenance ([Releases](releases.md) shows how to verify them). Install into a prefix, using
-the usual `PREFIX` and `DESTDIR` conventions:
+Each release on the [releases page](https://github.com/rust-cp/rcp/releases) carries
+Linux x86-64 and Linux ARM64 GNU archives, `SHA256SUMS`, an SPDX SBOM for each archive, a
+Sigstore signature and build provenance ([Releases](releases.md) shows how to verify them).
+Install into a prefix, using the usual `PREFIX` and `DESTDIR` conventions. Pick the archive
+that matches the machine (`uname -m`: `x86_64` or `aarch64`):
 
 ```sh
 sha256sum --check --ignore-missing SHA256SUMS
@@ -27,6 +28,9 @@ tar -xzf rcp-vX.Y.Z-x86_64-unknown-linux-gnu.tar.gz
 PREFIX=${PREFIX:-$HOME/.local}
 install -D -m 0755 rcp-vX.Y.Z-x86_64-unknown-linux-gnu/rcp "${DESTDIR}${PREFIX}/bin/rcp"
 ```
+
+The ARM64 archive is `rcp-vX.Y.Z-aarch64-unknown-linux-gnu.tar.gz`; the directory inside it
+has the same name, and the binary is still `rcp`.
 
 Uninstall by removing that file: `rm "${DESTDIR}${PREFIX}/bin/rcp"`. rcp installs nothing
 else. Its catalog (`~/.local/state/rcp/catalog` unless `-catalog`, `RCP_CATALOG` or
@@ -61,17 +65,28 @@ writable) by UID 10001, or add `--user "$(id -u):$(id -g)"`. Uninstall with
 
 The bare binary is also published as an OCI artifact at `ghcr.io/rust-cp/rcp-binary`, for
 hosts that pull through a registry: `oras pull ghcr.io/rust-cp/rcp-binary:X.Y.Z` fetches
-`rcp` and `SHA256SUMS` ([Releases](releases.md)).
+the x86-64 `rcp` and `SHA256SUMS`. The ARM64 binary is
+`ghcr.io/rust-cp/rcp-binary:X.Y.Z-aarch64-unknown-linux-gnu` ([Releases](releases.md)).
 
 ## With Cargo
 
-From source, with Cargo's own install convention (`--root`, or `CARGO_INSTALL_ROOT`, picks
+From crates.io, for the Linux-first pre-release. The package name is `rust-cp`; the
+command it installs is `rcp`. This builds from source for the host. The published release
+binaries and container image are Linux x86-64 and Linux ARM64.
+
+```sh
+cargo install rust-cp --version 0.1.3-alpha.1
+cargo install rust-cp --version 0.1.3-alpha.1 --features rustls
+cargo uninstall rust-cp
+```
+
+From a git tag, with Cargo's own install convention (`--root`, or `CARGO_INSTALL_ROOT`, picks
 the location; the default is `~/.cargo`):
 
 ```sh
 cargo install --locked --git https://github.com/rust-cp/rcp --tag vX.Y.Z            # default build
 cargo install --locked --git https://github.com/rust-cp/rcp --tag vX.Y.Z --features rustls
-cargo uninstall rcp
+cargo uninstall rust-cp
 ```
 
 **TLS needs `--features rustls`.** A source build without it has no TLS: every TLS

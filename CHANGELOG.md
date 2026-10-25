@@ -6,7 +6,28 @@ All notable changes to this project are documented here. The format follows
 
 ## [Unreleased]
 
-## [0.1.2] - 2026-10-18
+## [0.1.3-alpha.1] - 2026-10-25
+
+First crates.io pre-release. The library API is unstable before 1.0.
+
+### Added
+
+- The crates.io package name is `rust-cp` (the name `rcp` is already taken). The installed
+  command and the Rust library target stay `rcp`, so `cargo install rust-cp` provides `rcp`
+  and Rust code imports `use rcp::...`. Install this pre-release with
+  `cargo install rust-cp --version 0.1.3-alpha.1`.
+- Linux ARM64 (`aarch64-unknown-linux-gnu`) release archives, with the same checksums,
+  Sigstore signatures, SPDX SBOM and glibc 2.34 gate as the x86-64 archive. The container
+  image is a multi-arch index (`linux/amd64` and `linux/arm64`).
+- The `Release` workflow publishes to crates.io when `CARGO_REGISTRY_TOKEN` is set, and
+  skips that step when the secret is absent. Tag pushes and the manual release run are the
+  only triggers.
+
+### Changed
+
+- `publish = false` is gone. This alpha is the first version that can be published.
+- Test-only stand-in servers are `doc(hidden)`. They stay public so the integration tests
+  can use them, and they are not a stable API.
 
 ### Added
 

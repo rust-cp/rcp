@@ -9,6 +9,8 @@
 //! datanode, so the datanode names the cluster advertises must resolve from here.
 
 pub mod client;
+/// In-process WebHDFS stand-in used by the integration tests.
+#[doc(hidden)]
 pub mod testserver;
 
 #[cfg(test)]

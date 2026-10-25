@@ -54,11 +54,20 @@ def elf(path):
         copy(library)
 
 
-for binary in ("/usr/local/bin/rcp", "/usr/bin/ssh",
-               "/usr/lib/x86_64-linux-gnu/libgssapi_krb5.so.2"):
+def multiarch():
+    machine = os.uname().machine
+    if machine == "x86_64":
+        return "x86_64-linux-gnu"
+    if machine == "aarch64":
+        return "aarch64-linux-gnu"
+    raise SystemExit(f"unsupported runtime architecture: {machine}")
+
+
+lib = Path("/usr/lib") / multiarch()
+for binary in ("/usr/local/bin/rcp", "/usr/bin/ssh", str(lib / "libgssapi_krb5.so.2")):
     elf(binary)
 # Runtime-loaded Kerberos plugins do not appear in the executable's DT_NEEDED.
-for plugin in Path("/usr/lib/x86_64-linux-gnu/krb5/plugins").rglob("*.so"):
+for plugin in (lib / "krb5/plugins").rglob("*.so"):
     elf(plugin)
 for path in ("/etc/os-release", "/etc/ssl/certs/ca-certificates.crt", "/usr/share/rcp/LICENSE",
              "/usr/share/rcp/THIRD_PARTY_LICENSES.txt"):

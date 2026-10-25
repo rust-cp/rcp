@@ -1,6 +1,17 @@
 //! rcp (Rust copy): a general-purpose data mover for local paths, NFS exports and S3
 //! buckets, distributed under Apache-2.0, with no bundled interpreter or telemetry.
 //!
+//! # Stability
+//!
+//! The supported interface is the `rcp` command. This library is public so the binary,
+//! the in-tree tests and the fuzz targets can share it, and so a caller can start from
+//! [`ports::Runtime::plain`]. The library API is unstable before 1.0: modules, types and
+//! behavior may change in any release. Items that exist only for tests are `doc(hidden)`
+//! and are not part of that surface.
+//!
+//! The crates.io package name is `rust-cp` (`rcp` was already published by someone else).
+//! The library target name is still `rcp`, so dependents write `use rcp::...`.
+//!
 //! The default build's only third-party crates are audited open-source cryptography (the
 //! RustCrypto `sha2`, `hmac`, `md4`, `md-5`, `aes` and `cmac` crates, and the official
 //! `blake3`). Enable `rustls` for TLS and

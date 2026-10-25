@@ -254,8 +254,16 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "f8dcc9c7d52a811697d2151c701e0d08956f92b0e24136cf4cf27b57a6a0d9bf"
 
 [[package]]
-name = "rcp"
-version = "0.1.2"
+name = "rcp-fuzz"
+version = "0.0.0"
+dependencies = [
+ "libfuzzer-sys",
+ "rust-cp",
+]
+
+[[package]]
+name = "rust-cp"
+version = "0.1.3-alpha.1"
 dependencies = [
  "aes",
  "blake3",
@@ -264,14 +272,6 @@ dependencies = [
  "md-5",
  "md4",
  "sha2",
-]
-
-[[package]]
-name = "rcp-fuzz"
-version = "0.0.0"
-dependencies = [
- "libfuzzer-sys",
- "rcp",
 ]
 
 [[package]]

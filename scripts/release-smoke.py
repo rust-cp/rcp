@@ -23,7 +23,8 @@ def checksums(text):
 def main():
     dist = Path(sys.argv[1]).resolve()
     tag = sys.argv[2]
-    name = f"rcp-{tag}-x86_64-unknown-linux-gnu"
+    target = sys.argv[3] if len(sys.argv) > 3 else "x86_64-unknown-linux-gnu"
+    name = f"rcp-{tag}-{target}"
     archive = dist / f"{name}.tar.gz"
     rows = checksums((dist / "SHA256SUMS").read_text())
     expected = [digest for digest, filename in rows if filename == archive.name]
@@ -46,7 +47,7 @@ def main():
             assert (install / filename).stat().st_size > 0, filename
         sbom = json.loads((install / "SBOM.spdx.json").read_text())
         assert sbom["spdxVersion"] == "SPDX-2.3"
-        assert any(package["name"] == "rcp" for package in sbom["packages"])
+        assert any(package["name"] == "rust-cp" for package in sbom["packages"])
         binary = install / "rcp"
         env = dict(os.environ, HOME=str(root), RCP_CATALOG=str(root / "catalog"))
 

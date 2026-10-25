@@ -226,20 +226,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "9f7c3e4beb33f85d45ae3e3a1792185706c8e16d043238c593331cc7cd313b50"
 
 [[package]]
-name = "rcp"
-version = "0.1.2"
-dependencies = [
- "aes",
- "blake3",
- "cmac",
- "hmac",
- "md-5",
- "md4",
- "rustls",
- "sha2",
-]
-
-[[package]]
 name = "ring"
 version = "0.17.14"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -251,6 +237,20 @@ dependencies = [
  "libc",
  "untrusted",
  "windows-sys",
+]
+
+[[package]]
+name = "rust-cp"
+version = "0.1.3-alpha.1"
+dependencies = [
+ "aes",
+ "blake3",
+ "cmac",
+ "hmac",
+ "md-5",
+ "md4",
+ "rustls",
+ "sha2",
 ]
 
 [[package]]

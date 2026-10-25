@@ -15,6 +15,8 @@
 //! has no representation for one.
 
 pub mod client;
+/// In-process WebDAV stand-in used by the integration tests.
+#[doc(hidden)]
 pub mod testserver;
 pub mod xml;
 

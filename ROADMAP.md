@@ -18,9 +18,11 @@ each item was done, is the roadmap table in the
   several streams per large file (today the `-parallel` unit is a file); concurrent ranged
   GETs and multipart PUTs on S3; and resuming a partly written object rather than only a
   partly copied tree.
-- **Platforms**: the Windows x86-64 and Linux ARM64 builds are source-only today
-  ([CHANGELOG.md](CHANGELOG.md), [docs/src/portability.md](docs/src/portability.md)); widening
-  what is tested natively on them comes before publishing release assets for them.
+- **Platforms**: Linux x86-64 and Linux ARM64 GNU are release platforms (glibc 2.34 or
+  newer), with signed archives and a multi-arch container image. The Windows x86-64 build
+  is source-only. macOS is not supported. Widening what is tested natively on Windows, and
+  the remaining ARM64 protocol and Kerberos peers, is recorded in
+  [CHANGELOG.md](CHANGELOG.md) and [docs/src/portability.md](docs/src/portability.md).
 - **Keep the documentation current** with each release: the command-line reference is
   generated from the code and checked by `tests/docs.rs`.
 

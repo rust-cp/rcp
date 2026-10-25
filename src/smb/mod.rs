@@ -26,6 +26,8 @@ pub mod proto;
 #[cfg(test)]
 pub(crate) mod scripted;
 pub mod sign;
+/// In-process SMB stand-in used by the integration tests.
+#[doc(hidden)]
 pub mod testserver;
 
 pub use client::{Settings, SmbTree};

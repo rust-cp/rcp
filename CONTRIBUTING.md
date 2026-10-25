@@ -152,11 +152,13 @@ its job has only `uses:` steps, and any extra reporting goes in a separate job.
    `scripts/release.sh tag 0.2.0` followed by `git push origin v0.2.0` still works, but makes
    an unsigned annotated tag: signing it locally with gitsign would put the maintainer's
    personal e-mail address in a public transparency-log certificate.
-3. The release workflow requires the real Kerberos tests, then builds the GNU/Linux binary
-   with system GNU libc linkage and publishes a GitHub release with checksums, an SPDX
-   bill of materials, and the matching `CHANGELOG.md` section as notes. The archive
-   includes dependency license notices, `SBOM.spdx.json`, and `RUNTIME.txt` identifying
-   the build environment and runtime requirements. Each archive is signed keylessly
-   with cosign, and the release carries SLSA build provenance. The workflow also pushes
-   the signed hardened image, with an SBOM attestation, to `ghcr.io/rust-cp/rcp`. See
+3. The release workflow requires the real Kerberos tests, then builds the Linux x86-64 and
+   Linux ARM64 GNU binaries with system GNU libc linkage and publishes a GitHub release with
+   checksums, an SPDX bill of materials for each archive, and the matching `CHANGELOG.md`
+   section as notes. Each archive includes dependency license notices, `SBOM.spdx.json`, and
+   `RUNTIME.txt` identifying the build environment and runtime requirements. Each archive is
+   signed keylessly with cosign, and the release carries SLSA build provenance. The workflow
+   also pushes the signed multi-arch image (`linux/amd64` and `linux/arm64`), with an SBOM
+   attestation, to `ghcr.io/rust-cp/rcp`. When the `CARGO_REGISTRY_TOKEN` secret is set, a
+   tag release also runs `cargo publish`; when it is not set, that step skips. See
    `docs/src/releases.md` for the asset names and verification commands.

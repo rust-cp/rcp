@@ -77,7 +77,7 @@ prepare() {
     sed -i "0,/^version = \"$current\"/s//version = \"$version\"/" Cargo.toml
     cargo metadata --format-version 1 --offline >/dev/null
     [ "$(crate_version)" = "$version" ] || die "Cargo.toml still reads $(crate_version)"
-    # the fuzz workspace locks rcp by path, and the committed SBOM names the version; CI
+    # the fuzz workspace locks the package by path, and the committed SBOM names the version; CI
     # checks both with --locked
     (cd fuzz && cargo metadata --format-version 1 --offline >/dev/null)
     cargo metadata --locked --offline --features rustls --format-version 1 |

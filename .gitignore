@@ -1,4 +1,5 @@
 /target
+/release-staging
 /fuzz/target
 /fuzz/artifacts
 /docs/book

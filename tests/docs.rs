@@ -126,6 +126,14 @@ fn cli_reference_is_current() {
         std::fs::write(&path, &want).unwrap();
         return;
     }
+    // `cargo package` excludes `docs/`. The freshness check applies to a checkout;
+    // a packaged crate has nothing to compare and must not fail the suite.
+    if !path.is_file() {
+        eprintln!(
+            "skipping {PAGE}: docs/ is not in this package (the published crate excludes it)"
+        );
+        return;
+    }
     let have = std::fs::read_to_string(&path).unwrap_or_default();
     assert!(
         have == want,

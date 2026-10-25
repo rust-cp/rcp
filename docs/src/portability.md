@@ -1,13 +1,14 @@
 # Platform validation
 
-This is a development support matrix, not a list of published binaries. Releases publish
-the Linux x86-64 GNU build only; Linux ARM64 and Windows x86-64 are built from source.
-Candidates are development builds, not release assets.
+Releases publish Linux x86-64 and Linux ARM64 GNU binaries, and a multi-arch container
+image for those two platforms. Windows x86-64 is built from source and is not a release
+asset. macOS is not supported. The rows below are the qualification record; a release
+asset is the archive the `Release` workflow builds, not a candidate tarball from this page.
 
 | Target | Current status | Remaining validation |
 | --- | --- | --- |
-| Linux x86-64 GNU | Existing supported release target; portability regression checks run on an x86-64 Linux container | Existing UBI 9/10 and minimum GLIBC 2.29 compatibility evidence applies to the existing release, not automatically to newly built candidates |
-| Linux ARM64 GNU | Protected-open flags corrected; cross-check/link and native ordinary runtime qualification passed | Pinned older-libc candidate requires GLIBC 2.29 and passed native UBI9/GLIBC 2.34 smoke; full native protocol/KDC peers remain separate |
+| Linux x86-64 GNU | Supported release target; portability regression checks run on an x86-64 Linux container | Existing UBI 9/10 and minimum GLIBC 2.29 compatibility evidence applies to the existing release, not automatically to newly built candidates |
+| Linux ARM64 GNU | Supported release target. The release workflow builds `aarch64-unknown-linux-gnu` on a native ARM runner with the same glibc 2.34 gate, UBI 9 smoke, checksums, SBOM and signature as x86-64 | Full native protocol and Kerberos peers remain the manual `full-arm64` scope; they are not part of the release job |
 | Windows x86-64 MSVC | Native NTFS local adapter and executable implemented; optimized local/CLI and S3, WebDAV, HTTP and verified TLS tests passed | Real Windows SMB peers and unsupported protocol/process features remain separate qualifications |
 
 ## Architecture
@@ -92,8 +93,8 @@ and produced archive SHA256
 Both independent builds produced the same binary SHA256 recorded above. The
 downloaded archive was checked for exactly six regular files, licenses, ELF64
 AArch64 identity and matching archived, downloaded and native-smoked binary
-checksums. The candidate archive includes licenses, runtime requirements and checksums; it
-is not published as a release. The UBI package lists name packages without versions,
+checksums. That candidate archive is evidence from this recipe, not a release asset.
+The Release workflow publishes the ARM64 archive with the same glibc gate. The UBI package lists name packages without versions,
 so a superseded RPM no longer breaks the build; a new base image digest or package set
 still needs renewed native qualification.
 

@@ -15,6 +15,8 @@ pub mod client4;
 pub mod proto;
 pub mod rpc;
 pub mod show;
+/// In-process NFS stand-in used by the integration tests.
+#[doc(hidden)]
 pub mod testserver;
 pub mod v4;
 

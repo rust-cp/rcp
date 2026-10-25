@@ -2,8 +2,8 @@
   "spdxVersion": "SPDX-2.3",
   "dataLicense": "CC0-1.0",
   "SPDXID": "SPDXRef-DOCUMENT",
-  "name": "rcp-0.1.2",
-  "documentNamespace": "https://github.com/rust-cp/rcp/spdx/0.1.2/f1027134f430e565",
+  "name": "rcp-0.1.3-alpha.1",
+  "documentNamespace": "https://github.com/rust-cp/rcp/spdx/0.1.3-alpha.1/693cf747dc81f841",
   "creationInfo": {
     "created": "2026-10-14T00:00:00Z",
     "creators": [
@@ -13,8 +13,8 @@
   "packages": [
     {
       "SPDXID": "SPDXRef-Package-0",
-      "name": "rcp",
-      "versionInfo": "0.1.2",
+      "name": "rust-cp",
+      "versionInfo": "0.1.3-alpha.1",
       "downloadLocation": "https://github.com/rust-cp/rcp",
       "filesAnalyzed": false,
       "licenseDeclared": "Apache-2.0",
@@ -25,7 +25,7 @@
         {
           "referenceCategory": "PACKAGE-MANAGER",
           "referenceType": "purl",
-          "referenceLocator": "pkg:cargo/rcp@0.1.2"
+          "referenceLocator": "pkg:cargo/rust-cp@0.1.3-alpha.1"
         }
       ]
     },

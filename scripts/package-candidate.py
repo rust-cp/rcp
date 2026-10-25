@@ -86,7 +86,8 @@ def bundle(args):
     package = next(p for p in metadata['packages'] if p['id'] == root)
     features = set(next(n['features'] for n in metadata['resolve']['nodes'] if n['id'] == root))
     expected = WINDOWS_FEATURES if args.target == 'x86_64-pc-windows-msvc' else GNU_FEATURES
-    if package['name'] != 'rcp' or features != expected:
+    # crates.io package is rust-cp; the installed command remains rcp.
+    if package['name'] != 'rust-cp' or features != expected:
         raise ValueError('Cargo metadata does not match the qualified feature profile')
     data = args.binary.read_bytes()
     identity = identify(data, args.target)

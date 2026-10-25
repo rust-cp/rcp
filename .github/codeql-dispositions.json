@@ -1027,7 +1027,7 @@
       "scannedStartLine": 31,
       "classification": "false_positive",
       "owningFunction": "scripted::PASSWORD",
-      "reason": "Shared synthetic credential constant for the in-process scripted SMB test peer; its key derivation checks test NTLM proofs/signatures. The entire module is excluded from normal builds by its cfg(test) declaration. This specific finding is not reachable in a non-test build. CodeQL reports either of two representative paths for this finding on an unchanged tree: through src/smb/conn.rs test logins, or through the src/smb/client.rs test pool (pool_at(.., as_user(PASSWORD))). Both were reviewed; every sink on both is inside a #[cfg(test)] module. Later runs reported a third and a fourth representative path (the fourth through the src/smb/conn.rs test module and the scripted peer's own key derivation); their sinks are the same #[cfg(test)] modules and both were reviewed. The fourth path is also reported with its two flows in the opposite order, which digests differently; it is the same reviewed path.",
+      "reason": "Shared synthetic credential constant for the in-process scripted SMB test peer; its key derivation checks test NTLM proofs/signatures. The entire module is excluded from normal builds by its cfg(test) declaration. This specific finding is not reachable in a non-test build. CodeQL reports either of two representative paths for this finding on an unchanged tree: through src/smb/conn.rs test logins, or through the src/smb/client.rs test pool (pool_at(.., as_user(PASSWORD))). Both were reviewed; every sink on both is inside a #[cfg(test)] module. Later runs reported a third and a fourth representative path (the fourth through the src/smb/conn.rs test module and the scripted peer's own key derivation); their sinks are the same #[cfg(test)] modules and both were reviewed. The fourth path is also reported with its two flows in the opposite order, which digests differently; it is the same reviewed path. src/smb/mod.rs later gained a doc(hidden) attribute on testserver below this declaration; scripted remains #[cfg(test)] at the same line.",
       "cfgTestEvidence": [
         {
           "path": "src/smb/mod.rs",
@@ -1053,7 +1053,7 @@
       ],
       "sourceHashes": {
         "src/smb/conn.rs": "21d5066d4312f7467abeab82857267bbe66073f1bdd635d753f0aeb8778e11ad",
-        "src/smb/mod.rs": "4411684f2ec07c05ee7b94e361d558f00d419a766d7e70a1f38c0a11d46a2c5b",
+        "src/smb/mod.rs": "1ecd5e5be86d6dd246c48485a4a3e71784268e6a0619002524bffd04fd093509",
         "src/smb/scripted.rs": "b72b5adb4500a40a5d1ed65d502bb77d0ca5a14cf3676a82d5230a4553cbed21",
         "src/smb/client.rs": "407473cc901d873d827954b5519e5fcb3f17557b3b9a1fe0348fd024105c58fa"
       },
@@ -1071,21 +1071,22 @@
       },
       "classification": "false_positive",
       "owningFunction": "an_ipv6_endpoint_survives_parse_and_display_into_the_transport_parser",
-      "scannedStartLine": 1382,
+      "scannedStartLine": 1393,
       "scope": "test_fixture",
       "cfgTestEvidence": [
         {
           "path": "src/lib.rs",
-          "startLine": 1354,
+          "startLine": 1365,
           "scope": "#[cfg(test)] module containing the identified assertion"
         }
       ],
-      "reason": "The assertion formats fixed IPv6/WebDAV fixture endpoints. CodeQL follows no_password_in, a validator that rejects passwords before constructing the endpoint and never returns the password. No credential is logged.",
+      "reason": "The assertion formats fixed IPv6/WebDAV fixture endpoints. CodeQL follows no_password_in, a validator that rejects passwords before constructing the endpoint and never returns the password. No credential is logged. Re-reviewed after the crate-level stability docs shifted src/lib.rs by 11 lines: the reported path is the same no_password_in validator into Endpoint::display, and the sink is still inside the #[cfg(test)] module.",
       "sourceHashes": {
-        "src/lib.rs": "1d402494b50c9ef202a016d7db9f5a71dd9efadcec94a3b82c2362eb12218a44"
+        "src/lib.rs": "fc8cce521f9cb5f946e9b7a21f3eff83598434073c310a743795a4fb19c1ac01"
       },
       "flowDigests": [
-        "23f5d92b10e91225686681bb7f7f2d54be3f9696945f5f082077c7fb12d27834"
+        "23f5d92b10e91225686681bb7f7f2d54be3f9696945f5f082077c7fb12d27834",
+        "c81d3558619afec85a9470cc6f74ace2411b5e28f66297f0f21048984085bd08"
       ]
     },
     {
@@ -1412,13 +1413,14 @@
           "scope": "Reviewed reported source-to-sink implementation; see individual reason"
         }
       ],
-      "reason": "The command reports an endpoint after Endpoint::parse succeeds. The reported source no_password_in is a rejection-only validator: authority passwords return a fixed explanatory error before endpoint construction. Its message mentions password/key but carries no password value; Endpoint::display formats endpoint address/path, not authentication material.",
+      "reason": "The command reports an endpoint after Endpoint::parse succeeds. The reported source no_password_in is a rejection-only validator: authority passwords return a fixed explanatory error before endpoint construction. Its message mentions password/key but carries no password value; Endpoint::display formats endpoint address/path, not authentication material. Re-reviewed after the crate-level stability docs shifted src/lib.rs locations in this flow by 11 lines. The main.rs sink is unchanged. no_password_in still rejects an authority password before endpoint construction, and Endpoint::display still formats the address and path.",
       "sourceHashes": {
-        "src/lib.rs": "1d402494b50c9ef202a016d7db9f5a71dd9efadcec94a3b82c2362eb12218a44",
+        "src/lib.rs": "fc8cce521f9cb5f946e9b7a21f3eff83598434073c310a743795a4fb19c1ac01",
         "src/main.rs": "6982350920be5ce6f6a60241d6ec89d112f285cf16611a810fe4c857d1ac4362"
       },
       "flowDigests": [
-        "ff93410d28d1c23ca15764e10f5ebd4bdf767ddedc316c997154755f588dc0cb"
+        "ff93410d28d1c23ca15764e10f5ebd4bdf767ddedc316c997154755f588dc0cb",
+        "a600bcf4e7b8b6661262e888f7a476846394ff98fa7604cfcef98ad81e67fc15"
       ]
     },
     {
@@ -1546,13 +1548,14 @@
           "scope": "Reviewed reported source-to-sink implementation; see individual reason"
         }
       ],
-      "reason": "The command reports an endpoint after Endpoint::parse succeeds. The reported source no_password_in is a rejection-only validator: authority passwords return a fixed explanatory error before endpoint construction. Its message mentions password/key but carries no password value; Endpoint::display formats endpoint address/path, not authentication material.",
+      "reason": "The command reports an endpoint after Endpoint::parse succeeds. The reported source no_password_in is a rejection-only validator: authority passwords return a fixed explanatory error before endpoint construction. Its message mentions password/key but carries no password value; Endpoint::display formats endpoint address/path, not authentication material. Re-reviewed after the crate-level stability docs shifted src/lib.rs locations in this flow by 11 lines. The main.rs sink is unchanged. no_password_in still rejects an authority password before endpoint construction, and Endpoint::display still formats the address and path.",
       "sourceHashes": {
-        "src/lib.rs": "1d402494b50c9ef202a016d7db9f5a71dd9efadcec94a3b82c2362eb12218a44",
+        "src/lib.rs": "fc8cce521f9cb5f946e9b7a21f3eff83598434073c310a743795a4fb19c1ac01",
         "src/main.rs": "6982350920be5ce6f6a60241d6ec89d112f285cf16611a810fe4c857d1ac4362"
       },
       "flowDigests": [
-        "938124ed508f171f921527b5a360fb5393e98ca2a3220ff3e503767cf90f98fe"
+        "938124ed508f171f921527b5a360fb5393e98ca2a3220ff3e503767cf90f98fe",
+        "e96e11fed1956bb6357c87d2d6797d068cb004761cebc0da59179500bab0a867"
       ]
     },
     {
@@ -1575,13 +1578,14 @@
           "scope": "Reviewed reported source-to-sink implementation; see individual reason"
         }
       ],
-      "reason": "The command reports an endpoint after Endpoint::parse succeeds. The reported source no_password_in is a rejection-only validator: authority passwords return a fixed explanatory error before endpoint construction. Its message mentions password/key but carries no password value; Endpoint::display formats endpoint address/path, not authentication material.",
+      "reason": "The command reports an endpoint after Endpoint::parse succeeds. The reported source no_password_in is a rejection-only validator: authority passwords return a fixed explanatory error before endpoint construction. Its message mentions password/key but carries no password value; Endpoint::display formats endpoint address/path, not authentication material. Re-reviewed after the crate-level stability docs shifted src/lib.rs locations in this flow by 11 lines. The main.rs sink is unchanged. no_password_in still rejects an authority password before endpoint construction, and Endpoint::display still formats the address and path.",
       "sourceHashes": {
-        "src/lib.rs": "1d402494b50c9ef202a016d7db9f5a71dd9efadcec94a3b82c2362eb12218a44",
+        "src/lib.rs": "fc8cce521f9cb5f946e9b7a21f3eff83598434073c310a743795a4fb19c1ac01",
         "src/main.rs": "6982350920be5ce6f6a60241d6ec89d112f285cf16611a810fe4c857d1ac4362"
       },
       "flowDigests": [
-        "8aff9e9d8ff52c7a60ea03097cc7581643607f6752fefa300af1c519ee8a4f46"
+        "8aff9e9d8ff52c7a60ea03097cc7581643607f6752fefa300af1c519ee8a4f46",
+        "1501867e8cbec5642aa9b4bcceec98fee9639de4f7d5d511764fc6a966924c7b"
       ]
     },
     {

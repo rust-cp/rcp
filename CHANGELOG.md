@@ -26,6 +26,7 @@ First crates.io pre-release. The library API is unstable before 1.0.
 ### Changed
 
 - `publish = false` is gone. This alpha is the first version that can be published.
+- `ctutils` 0.4.5 and `rustls-webpki` 0.103.16 pick up the fixes for RUSTSEC-2026-0385 and RUSTSEC-2026-0382.
 - Test-only stand-in servers are `doc(hidden)`. They stay public so the integration tests
   can use them, and they are not a stable API.
 

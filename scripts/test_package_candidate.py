@@ -33,7 +33,7 @@ class CandidateBundle(unittest.TestCase):
         self.metadata(candidate.GNU_FEATURES)
 
     def metadata(self, features):
-        self.args.metadata.write_text(json.dumps({'packages':[{'id':'root','name':'rcp','version':'0.1.0'}],
+        self.args.metadata.write_text(json.dumps({'packages':[{'id':'root','name':'rust-cp','version':'0.1.0'}],
             'resolve':{'root':'root','nodes':[{'id':'root','features':sorted(features)}]}}))
 
     def windows(self):

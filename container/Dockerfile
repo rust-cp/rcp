@@ -1,8 +1,10 @@
-# The verified multi-platform index resolves to the recorded Linux/amd64 manifest.
-# Renovate may propose a new digest; dependency locks and smoke tests must be reviewed.
+# The digest is a multi-platform index. `--platform linux/amd64` or `linux/arm64`
+# selects the manifest. Renovate may propose a new digest; dependency locks and smoke
+# tests must be reviewed.
 FROM docker.io/library/ubuntu:24.04@sha256:008173c23f95b170204355c12626cb5a965d779a7e1283b09e9cffbb1bf33ca3 AS runtime
 COPY packages.lock /tmp/packages.lock
-RUN test "$(dpkg --print-architecture)" = amd64 \
+RUN arch="$(dpkg --print-architecture)" \
+    && case "$arch" in amd64|arm64) ;; *) echo "unsupported architecture: $arch" >&2; exit 1 ;; esac \
     && apt-get update \
     && DEBIAN_FRONTEND=noninteractive xargs -r -a /tmp/packages.lock apt-get install -y --no-install-recommends
 COPY rcp /usr/local/bin/rcp

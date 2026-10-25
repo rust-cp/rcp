@@ -26,6 +26,8 @@
 
 pub mod client;
 pub mod index;
+/// In-process HTTP stand-in used by the integration tests.
+#[doc(hidden)]
 pub mod testserver;
 
 pub use client::HttpsTree;

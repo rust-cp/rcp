@@ -106,7 +106,7 @@ jobs:
       - run: |
           allowed=$(grep -v '^#' scripts/allowed-dependencies.txt | sed '/^$/d' | sort -u)
           deps=$(cargo tree --locked -e normal,build --target all --prefix none \
-            | sed 's/ (\*)$//' | awk '$1 != "rcp" {print $1}' | sort -u)
+            | sed 's/ (\*)$//' | awk '$1 != "rust-cp" {print $1}' | sort -u)
           extra=$(comm -23 <(printf '%s\n' "$deps") <(printf '%s\n' "$allowed"))
           [ -z "$extra" ] || { printf 'the default build pulls in crates not in scripts/allowed-dependencies.txt:\n%s\n' "$extra" >&2; exit 1; }
           printf 'default build crates (%s), all allowed:\n%s\n' "$(printf '%s\n' "$deps" | wc -l)" "$deps"

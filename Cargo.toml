@@ -1,6 +1,6 @@
 [package]
-name = "rcp"
-version = "0.1.2"
+name = "rust-cp"
+version = "0.1.3-alpha.1"
 edition = "2021"
 rust-version = "1.87"
 # MSRV-aware resolution: `cargo update` (and Renovate, through it) picks the newest
@@ -14,8 +14,20 @@ documentation = "https://rust-cp.github.io/rcp/"
 readme = "README.md"
 keywords = ["copy", "sync", "nfs", "s3", "smb"]
 categories = ["command-line-utilities", "filesystem", "network-programming"]
-publish = false
 exclude = ["/.github", "/bench", "/docs", "/scripts", "/fuzz", "/rcp.spdx.json"]
+
+# docs.rs builds with the default features on x86_64-unknown-linux-gnu. `system-zstd` is
+# not a default feature and links the system libzstd, which that builder does not have.
+[package.metadata.docs.rs]
+all-features = false
+default-target = "x86_64-unknown-linux-gnu"
+targets = ["x86_64-unknown-linux-gnu"]
+
+# The crates.io package is rust-cp because the name rcp is already taken. The library
+# target stays rcp, so Rust code imports this crate as `rcp` (`use rcp::...`).
+[lib]
+name = "rcp"
+path = "src/lib.rs"
 
 # The default build's only third-party crates are audited open-source cryptography: the
 # RustCrypto hashes, MACs and AES, and the official BLAKE3. Everything else is written here.

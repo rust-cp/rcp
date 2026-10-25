@@ -38,13 +38,32 @@ refuses TLS endpoints by name.
 
 ## Install
 
+### crates.io
+
+The crates.io package is [`rust-cp`](https://crates.io/crates/rust-cp) (the name `rcp` is
+already taken). `0.1.3-alpha.1` is a Linux-first pre-release: the release binaries and the
+container image are Linux x86-64 and Linux ARM64. `cargo install` builds from source for
+the machine you run it on. The installed command is `rcp`. In Rust the library target is
+also `rcp`, so code imports it as `use rcp::...`. The library API is unstable before 1.0.
+
+```sh
+cargo install rust-cp --version 0.1.3-alpha.1
+cargo install rust-cp --version 0.1.3-alpha.1 --features rustls   # adds TLS
+```
+
+TLS is not a default feature. The release archives and the container image are built with
+`rustls`.
+
+### Release archives
+
 Download a release from the
 [releases page](https://github.com/rust-cp/rcp/releases) and check it against the
-published `SHA256SUMS`:
+published `SHA256SUMS`. Each release has a Linux x86-64 archive and a Linux ARM64 archive:
 
 ```sh
 sha256sum --check --ignore-missing SHA256SUMS
 tar -xzf rcp-v*-x86_64-unknown-linux-gnu.tar.gz
+# or: tar -xzf rcp-v*-aarch64-unknown-linux-gnu.tar.gz
 ```
 
 The release also publishes `*.tar.gz.spdx.json`, an SPDX bill of materials for the
@@ -72,11 +91,19 @@ and the bare binary at `ghcr.io/rust-cp/rcp-binary`. Verify the images with cosi
 later: they are signed in the newer Sigstore bundle format, and cosign v2.x reports "no
 signatures found" for them.
 
-The release binary runs on x86-64 GNU/Linux with glibc 2.34 or newer, which includes
-RHEL 9. Each release is checked against that limit at build time and run on UBI 9
-before it is published. The archive's `RUNTIME.txt` lists its required glibc symbol versions. Kerberos
-also needs a system GSSAPI library and realm configuration. `THIRD_PARTY_LICENSES.txt`
-includes the licenses of the bundled Rust dependencies.
+Release binaries are Linux x86-64 and Linux ARM64, dynamically linked to GNU libc 2.34
+or newer, which includes RHEL 9. Each archive is checked against that limit at build
+time and run on UBI 9 before it is published. The archive's `RUNTIME.txt` lists its
+required glibc symbol versions. Kerberos also needs a system GSSAPI library and realm
+configuration. `THIRD_PARTY_LICENSES.txt` includes the licenses of the bundled Rust
+dependencies.
+
+The container image is a multi-arch index (`linux/amd64` and `linux/arm64`); `docker pull`
+selects the host architecture.
+
+macOS is not supported. The local engine uses Linux fcntl flag values and Linux xattr
+and io_uring calls, with no Darwin branch, and releases do not build an Apple target.
+Windows x86-64 is source-only: there is no Windows release asset.
 
 ### From source
 

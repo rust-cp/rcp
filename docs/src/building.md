@@ -61,7 +61,7 @@ configure. The contract suite in `tests/contract.rs` covers the default build; C
 `features` job checks that the library and binary build with each feature alone, with none,
 and with every pair.
 
-The release build targets x86-64 GNU/Linux and dynamically links the host's GNU libc.
+Release builds target x86-64 and ARM64 GNU/Linux and dynamically link the host's GNU libc.
 Its archive includes `RUNTIME.txt`, which records the build environment and required glibc
 symbol versions, and `THIRD_PARTY_LICENSES.txt` for the Rust dependencies. Check those
 requirements on the destination host; compatibility with older distributions is not

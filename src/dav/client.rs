@@ -1845,12 +1845,28 @@ mod tests {
     /// happens after a correct parse -- refused, unreachable, no IPv6 at all -- is not that.
     #[test]
     fn an_ipv6_literal_reaches_the_resolver_as_an_address_and_not_as_a_name() {
-        let lookup_failed = |e: &io::Error| {
+        let looked_up_as_a_name = |e: &io::Error| {
             let s = e.to_string();
             s.contains("failed to lookup address information")
                 || s.contains("Name or service not known")
-                || e.raw_os_error() == Some(11001)
                 || s.contains("No such host is known")
+                || s.contains("nodename nor servname provided")
+                || s.contains("No address associated with hostname")
+                || s.contains("name resolution")
+                || s.contains("Try again")
+                || e.raw_os_error() == Some(11001)
+        };
+        // EAI_SYSTEM drops the "failed to lookup" sentence and returns the resolver's
+        // errno. A network that does not answer `.invalid` with NXDOMAIN times out that
+        // way. A dial timeout is not this: the literal arm below only rejects name-lookup
+        // wording, so a refused or timed-out connection to `[::1]` still passes it.
+        let lookup_timed_out = |e: &io::Error| {
+            let s = e.to_string().to_ascii_lowercase();
+            e.kind() == io::ErrorKind::TimedOut
+                || s.contains("timed out")
+                || s.contains("timeout")
+                || e.raw_os_error() == Some(110)
+                || e.raw_os_error() == Some(10060)
         };
         let open = |u: &str| {
             DavTree::connect(
@@ -1867,16 +1883,17 @@ mod tests {
         // as an address, never as a name.
         let e = open("dav://[::1]:1/x");
         assert!(
-            !lookup_failed(&e),
+            !looked_up_as_a_name(&e),
             "the bracketed literal went to the resolver as a name: {e}"
         );
 
-        // THE CONTROL: a genuine name that resolves nowhere DOES come back that way, so
-        // the arm above is reading a real distinction and not a message that never appears.
+        // THE CONTROL: a genuine name that resolves nowhere comes back as a lookup
+        // failure, or times out waiting for one. Either one shows the arm above is
+        // reading a real distinction.
         let e = open("dav://no-such-host.invalid:1/x");
         assert!(
-            lookup_failed(&e),
-            "a name that resolves nowhere should say so: {e}"
+            looked_up_as_a_name(&e) || lookup_timed_out(&e),
+            "a name that resolves nowhere should say so, or time out looking it up: {e}"
         );
     }
 

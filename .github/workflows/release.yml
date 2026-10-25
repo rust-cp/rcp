@@ -18,7 +18,9 @@ permissions:
 
 env:
   CARGO_TERM_COLOR: always
-  # Staged outside the checkout, so publish.sh sees the tree as clean.
+  # Staged outside the checkout, so publish.sh and cargo publish see the tree as clean.
+  # `runner.temp` is not available in a workflow-level env, so this is the parent of the
+  # workspace. The publish job resolves it before any step that refuses a `..` path.
   DIST: ${{ github.workspace }}/../dist
 
 concurrency:
@@ -26,26 +28,16 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
-  release:
-    name: release
+  verify:
+    name: verify
     runs-on: ubuntu-24.04
-    timeout-minutes: 30
+    timeout-minutes: 45
     env:
       TAG: ${{ github.event_name == 'workflow_dispatch' && format('v{0}', inputs.version) || github.ref_name }}
-    permissions:
-      contents: write # create the tag on a manual run, the GitHub release and its assets
-      packages: write # push the image and the binary to ghcr.io
-      id-token: write # keyless Sigstore signing and build provenance
-      attestations: write # store the provenance attestation
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
-
-      # actions/attest refuses a subject path containing '..', so it gets the resolved form.
-      - name: Resolve the staging directory
-        id: dist
-        run: echo "path=$(realpath -m "$DIST")" >> "$GITHUB_OUTPUT"
 
       - name: The tag must match the crate version
         run: |
@@ -67,39 +59,170 @@ jobs:
         env:
           RCP_REQUIRE_KDC: "1"
 
+  package:
+    name: package (${{ matrix.target }})
+    needs: verify
+    runs-on: ${{ matrix.runner }}
+    timeout-minutes: 45
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - target: x86_64-unknown-linux-gnu
+            runner: ubuntu-24.04
+            platform: linux/amd64
+            machine: x86_64
+            arch_label: x86-64
+            rust_image: docker.io/library/rust@sha256:ba3a8b9eb24de14c1879efe8acff7d4eb747723ca957e0d2409d0bc2ea9f84a7
+            compat_dockerfile: container/compatibility-test.Dockerfile
+            compat_tag: localhost/rcp-glibc-test
+          - target: aarch64-unknown-linux-gnu
+            runner: ubuntu-24.04-arm
+            platform: linux/arm64
+            machine: aarch64
+            arch_label: ARM64
+            rust_image: docker.io/library/rust@sha256:c90f06dc32cb5ba7716c1e65fc2c63b4a430580bd8b6a676e1028aed0ed53e5d
+            compat_dockerfile: container/compatibility-arm64.Dockerfile
+            compat_tag: localhost/rcp-arm64-abi
+    env:
+      TAG: ${{ github.event_name == 'workflow_dispatch' && format('v{0}', inputs.version) || github.ref_name }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
       - name: Build the GNU/Linux binary
+        env:
+          TARGET: ${{ matrix.target }}
+          PLATFORM: ${{ matrix.platform }}
+          MACHINE: ${{ matrix.machine }}
+          RUST_IMAGE: ${{ matrix.rust_image }}
         run: |
           mkdir -p "$DIST/baseline"
-          docker run --rm --mount "type=bind,source=$PWD,target=/src,readonly" --mount "type=bind,source=$DIST/baseline,target=/output" -w /src \
-            docker.io/library/rust@sha256:ba3a8b9eb24de14c1879efe8acff7d4eb747723ca957e0d2409d0bc2ea9f84a7 \
-            bash -c 'set -euo pipefail; bash scripts/build-gnu.sh /output'
+          docker run --rm --platform "$PLATFORM" \
+            --env TARGET --env MACHINE \
+            --mount "type=bind,source=$PWD,target=/src,readonly" \
+            --mount "type=bind,source=$DIST/baseline,target=/output" \
+            -w /src "$RUST_IMAGE" \
+            bash -c 'set -euo pipefail; test "$(uname -m)" = "$MACHINE"; bash scripts/build-gnu.sh /output "$TARGET"'
           bin="$DIST/baseline/rcp"
           file "$bin" | grep -q 'dynamically linked' || { echo "binary must use the system GNU libc" >&2; exit 1; }
+          case "$TARGET" in
+            x86_64-unknown-linux-gnu) file "$bin" | grep -q 'x86-64' ;;
+            aarch64-unknown-linux-gnu) file "$bin" | grep -q 'aarch64' ;;
+            *) echo "unsupported target $TARGET" >&2; exit 1 ;;
+          esac
           "$bin" version
-          name="rcp-$TAG-x86_64-unknown-linux-gnu"
-          mkdir -p "$DIST/$name" && cp "$bin" LICENSE README.md "$DIST/$name/"
-          printf 'GNU/Linux x86-64, dynamically linked to system GNU libc.\nMaximum required GNU libc ABI: 2.34 (enforced at build time).\nBuilder: official Rust 1.90.0/Bullseye, digest sha256:ba3a8b9eb24de14c1879efe8acff7d4eb747723ca957e0d2409d0bc2ea9f84a7.\nKerberos requires the system GSSAPI library.\n' > "$DIST/$name/RUNTIME.txt"
-          printf '\nRequired GNU libc symbol versions:\n' >> "$DIST/$name/RUNTIME.txt"
-          objdump -T "$bin" | grep -o 'GLIBC_[0-9.]*' | sort -Vu >> "$DIST/$name/RUNTIME.txt"
+
+      - name: Package the release archive
+        env:
+          TARGET: ${{ matrix.target }}
+          ARCH_LABEL: ${{ matrix.arch_label }}
+          RUST_IMAGE: ${{ matrix.rust_image }}
+        run: |
+          bin="$DIST/baseline/rcp"
+          name="rcp-$TAG-$TARGET"
+          mkdir -p "$DIST/$name"
+          cp "$bin" LICENSE README.md "$DIST/$name/"
+          {
+            printf 'GNU/Linux %s, dynamically linked to system GNU libc.\n' "$ARCH_LABEL"
+            printf 'Maximum required GNU libc ABI: 2.34 (enforced at build time).\n'
+            printf 'Builder: official Rust 1.90.0/Bullseye, digest %s.\n' "${RUST_IMAGE##*@}"
+            printf 'Kerberos requires the system GSSAPI library.\n'
+            printf '\nRequired GNU libc symbol versions:\n'
+            objdump -T "$bin" | grep -o 'GLIBC_[0-9.]*' | sort -Vu
+          } > "$DIST/$name/RUNTIME.txt"
           cp "$DIST/baseline/THIRD_PARTY_LICENSES.txt" "$DIST/$name/"
           python3 scripts/spdx-sbom.py --metadata "$DIST/baseline/cargo-metadata.json" \
             --namespace "https://github.com/${GITHUB_REPOSITORY}/releases/download/${TAG}/${name}.tar.gz.spdx.json" \
             --output "$DIST/$name/SBOM.spdx.json"
           tar -C "$DIST" -czf "$DIST/$name.tar.gz" "$name"
           cp "$DIST/$name/SBOM.spdx.json" "$DIST/$name.tar.gz.spdx.json"
-          cp "$bin" "$DIST/rcp"
           ( cd "$DIST" && sha256sum "$name.tar.gz" "$name.tar.gz.spdx.json" > SHA256SUMS )
 
       - name: Verify GLIBC 2.34 runtime and dynamic GSSAPI
+        env:
+          PLATFORM: ${{ matrix.platform }}
+          MACHINE: ${{ matrix.machine }}
+          COMPAT_DOCKERFILE: ${{ matrix.compat_dockerfile }}
+          COMPAT_TAG: ${{ matrix.compat_tag }}
         run: |
-          docker build -f container/compatibility-test.Dockerfile -t localhost/rcp-glibc-test .
-          docker run --rm --network none --read-only --cap-drop ALL --security-opt no-new-privileges --tmpfs /tmp:rw,noexec,nosuid,nodev \
+          docker build --platform "$PLATFORM" -f "$COMPAT_DOCKERFILE" -t "$COMPAT_TAG" .
+          docker run --rm --platform "$PLATFORM" --network none "$COMPAT_TAG" \
+            python3 -c 'import platform,sys; assert platform.machine()==sys.argv[1], platform.machine()' \
+            "$MACHINE"
+          docker run --rm --platform "$PLATFORM" --network none --read-only --cap-drop ALL --security-opt no-new-privileges --tmpfs /tmp:rw,noexec,nosuid,nodev \
             --env RCP_EXPECTED_VERSION="${TAG#v}" \
             --mount "type=bind,source=$PWD/scripts,target=/scripts,readonly" --mount "type=bind,source=$DIST/baseline,target=/input,readonly" \
-            localhost/rcp-glibc-test python3 /scripts/glibc-runtime-smoke.py /input/rcp > "$DIST/baseline/glibc-runtime-smoke.json"
+            "$COMPAT_TAG" python3 /scripts/glibc-runtime-smoke.py /input/rcp > "$DIST/baseline/glibc-runtime-smoke.json"
 
       - name: Verify the packaged release
-        run: python3 scripts/release-smoke.py "$DIST" "$TAG"
+        env:
+          TARGET: ${{ matrix.target }}
+        run: python3 scripts/release-smoke.py "$DIST" "$TAG" "$TARGET"
+
+      - name: Build and test the container image
+        env:
+          PLATFORM: ${{ matrix.platform }}
+        run: |
+          suffix="${PLATFORM#linux/}"
+          python3 scripts/build-container.py --binary "$DIST/baseline/rcp" \
+            --notices "$DIST/baseline/THIRD_PARTY_LICENSES.txt" \
+            --image "localhost/rcp:${suffix}" --platform "$PLATFORM" \
+            --version "${TAG#v}" --revision "$GITHUB_SHA"
+          cc -Wall -Wextra -Werror container/hardening-probe.c -o "$RUNNER_TEMP/rcp-probe"
+          python3 scripts/container-smoke.py --image "localhost/rcp:${suffix}" --probe "$RUNNER_TEMP/rcp-probe" \
+            --output "$RUNNER_TEMP/container-smoke"
+          docker save "localhost/rcp:${suffix}" -o "$DIST/image.tar"
+
+      - name: Stage the artifact
+        env:
+          TARGET: ${{ matrix.target }}
+          PLATFORM: ${{ matrix.platform }}
+        run: |
+          name="rcp-$TAG-$TARGET"
+          stage="release-staging/$TARGET"
+          rm -rf "$stage"
+          mkdir -p "$stage"
+          cp "$DIST/$name.tar.gz" "$DIST/$name.tar.gz.spdx.json" "$stage/"
+          cp "$DIST/baseline/rcp" "$stage/rcp"
+          cp "$DIST/baseline/build-toolchain.txt" "$stage/build-toolchain.txt"
+          cp "$DIST/image.tar" "$stage/image.tar"
+          printf '%s\n' "$PLATFORM" > "$stage/platform.txt"
+
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: release-${{ matrix.target }}
+          path: release-staging/${{ matrix.target }}
+          if-no-files-found: error
+          retention-days: 1
+
+  publish:
+    name: publish
+    needs: package
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    env:
+      TAG: ${{ github.event_name == 'workflow_dispatch' && format('v{0}', inputs.version) || github.ref_name }}
+    permissions:
+      contents: write # create the tag on a manual run, the GitHub release and its assets
+      packages: write # push the image and the binary to ghcr.io
+      id-token: write # keyless Sigstore signing and build provenance
+      attestations: write # store the provenance attestation
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - uses: actions/download-artifact@37930b1c2abaa49bbe596cd826c3c89aef350131 # v7.0.0
+        with:
+          pattern: release-*
+          path: ${{ runner.temp }}/release-parts
+          merge-multiple: false
+
+      - name: Resolve the staging directory
+        id: dist
+        run: echo "path=$(realpath "$DIST")" >> "$GITHUB_OUTPUT"
 
       # A manual run makes the tag itself and signs it keylessly with gitsign, using this
       # job's OIDC identity: the certificate names this workflow on main, and the signature is
@@ -126,6 +249,24 @@ jobs:
           git -c "http.https://github.com/.extraheader=AUTHORIZATION: basic $auth" \
             push origin "refs/tags/$TAG"
           echo "tagged $TAG at $GITHUB_SHA, signed"
+
+      - name: Collect archives and checksums
+        run: |
+          parts="${RUNNER_TEMP}/release-parts"
+          mkdir -p "$DIST"
+          find "$parts" -mindepth 2 -maxdepth 2 -type f \( -name '*.tar.gz' -o -name '*.spdx.json' \) -exec cp -t "$DIST" {} +
+          count=$(find "$DIST" -maxdepth 1 -type f \( -name '*.tar.gz' -o -name '*.spdx.json' \) | wc -l)
+          [ "$count" -eq 4 ] || { echo "expected 2 archives and 2 SBOMs, found $count" >&2; exit 1; }
+          (
+            cd "$DIST"
+            find . -maxdepth 1 -type f \( -name '*.tar.gz' -o -name '*.spdx.json' \) -printf '%P\n' | sort > files.txt
+            : > SHA256SUMS
+            while IFS= read -r file; do
+              sha256sum "$file" >> SHA256SUMS
+            done < files.txt
+            rm files.txt
+            sha256sum --check SHA256SUMS
+          )
 
       - uses: sigstore/cosign-installer@6f9f17788090df1f26f669e9d70d6ae9567deba6 # v4.1.2
 
@@ -154,20 +295,6 @@ jobs:
             on' CHANGELOG.md > "$DIST/NOTES.md"
           [ -s "$DIST/NOTES.md" ] || { echo "CHANGELOG.md has no section for $version" >&2; exit 1; }
 
-      - name: Build and test the container image
-        id: image
-        run: |
-          image="ghcr.io/${GITHUB_REPOSITORY_OWNER,,}/rcp"
-          python3 scripts/build-container.py --binary "$DIST/baseline/rcp" \
-            --notices "$DIST/baseline/THIRD_PARTY_LICENSES.txt" \
-            --image "$image:${TAG#v}" --version "${TAG#v}" --revision "$GITHUB_SHA"
-          cc -Wall -Wextra -Werror container/hardening-probe.c -o "$RUNNER_TEMP/rcp-probe"
-          python3 scripts/container-smoke.py --image "$image:${TAG#v}" --probe "$RUNNER_TEMP/rcp-probe" \
-            --output "$RUNNER_TEMP/container-smoke"
-          scripts/install-ci-tool.sh syft
-          syft scan "docker:$image:${TAG#v}" -o "spdx-json=$DIST/container.spdx.json"
-          echo "image=$image" >> "$GITHUB_OUTPUT"
-
       - name: Publish the GitHub release
         env:
           GH_TOKEN: ${{ github.token }}
@@ -181,53 +308,132 @@ jobs:
           gh release create "$TAG" --repo "$GITHUB_REPOSITORY" --verify-tag \
             --title "rcp ${TAG#v}" --notes-file "$DIST/NOTES.md" $prerelease "${assets[@]}"
 
-      - name: Push the container image to GitHub Container Registry
-        id: push
+      - name: Push the multi-arch container image
+        id: image
         env:
-          IMAGE: ${{ steps.image.outputs.image }}
           REGISTRY_TOKEN: ${{ github.token }}
         run: |
+          parts="${RUNNER_TEMP}/release-parts"
+          image="ghcr.io/${GITHUB_REPOSITORY_OWNER,,}/rcp"
+          version=${TAG#v}
           echo "$REGISTRY_TOKEN" | docker login ghcr.io --username "$GITHUB_ACTOR" --password-stdin
-          docker push "$IMAGE:${TAG#v}"
-          digest=$(docker inspect --format '{{index .RepoDigests 0}}' "$IMAGE:${TAG#v}")
-          digest=${digest#*@}
-          [[ "$digest" =~ ^sha256:[0-9a-f]{64}$ ]] || { echo "unexpected digest: $digest" >&2; exit 1; }
-          echo "digest=$digest" >> "$GITHUB_OUTPUT"
+          mkdir -p "$DIST/images"
+          scripts/install-ci-tool.sh syft
+          : > "$DIST/image-digests.txt"
+          for dir in "$parts"/release-*; do
+            platform=$(tr -d '\n' < "$dir/platform.txt")
+            suffix=${platform#linux/}
+            docker load -i "$dir/image.tar"
+            docker tag "localhost/rcp:${suffix}" "$image:${version}-linux-${suffix}"
+            docker push "$image:${version}-linux-${suffix}"
+            digest=$(docker inspect --format '{{index .RepoDigests 0}}' "$image:${version}-linux-${suffix}")
+            digest=${digest#*@}
+            [[ "$digest" =~ ^sha256:[0-9a-f]{64}$ ]] || { echo "unexpected digest: $digest" >&2; exit 1; }
+            printf '%s %s\n' "$suffix" "$digest" >> "$DIST/image-digests.txt"
+            syft scan "docker:$image:${version}-linux-${suffix}" -o "spdx-json=$DIST/images/container-linux-${suffix}.spdx.json"
+          done
+          [ -s "$DIST/image-digests.txt" ] || { echo "no platform images were pushed" >&2; exit 1; }
+          grep -q '^amd64 ' "$DIST/image-digests.txt"
+          grep -q '^arm64 ' "$DIST/image-digests.txt"
+          docker buildx imagetools create -t "$image:${version}" \
+            "$image:${version}-linux-amd64" \
+            "$image:${version}-linux-arm64"
+          index=$(docker buildx imagetools inspect "$image:${version}" | sed -n 's/^Digest:[[:space:]]*//p' | head -1)
+          [[ "$index" =~ ^sha256:[0-9a-f]{64}$ ]] || { echo "unexpected index digest: $index" >&2; exit 1; }
+          amd64=$(awk '$1 == "amd64" {print $2}' "$DIST/image-digests.txt")
+          arm64=$(awk '$1 == "arm64" {print $2}' "$DIST/image-digests.txt")
+          {
+            echo "image=$image"
+            echo "amd64=$amd64"
+            echo "arm64=$arm64"
+            echo "index=$index"
+          } >> "$GITHUB_OUTPUT"
+          cosign sign --yes "$image@$amd64"
+          cosign sign --yes "$image@$arm64"
+          cosign sign --yes "$image@$index"
+          cosign attest --yes --type spdxjson --predicate "$DIST/images/container-linux-amd64.spdx.json" "$image@$amd64"
+          cosign attest --yes --type spdxjson --predicate "$DIST/images/container-linux-arm64.spdx.json" "$image@$arm64"
+          cosign attest --yes --type spdxjson --predicate "$DIST/images/container-linux-amd64.spdx.json" "$image@$index"
+          cosign attest --yes --type spdxjson --predicate "$DIST/images/container-linux-arm64.spdx.json" "$image@$index"
 
-      - name: Sign the image and attest its SBOM
-        env:
-          IMAGE: ${{ steps.image.outputs.image }}
-          DIGEST: ${{ steps.push.outputs.digest }}
-        run: |
-          cosign sign --yes "$IMAGE@$DIGEST"
-          cosign attest --yes --type spdxjson --predicate "$DIST/container.spdx.json" "$IMAGE@$DIGEST"
-
-      - name: Attest image build provenance
+      - name: Attest amd64 image build provenance
         uses: actions/attest-build-provenance@4d101475d8b20a2381f78447822ac1eab6504dd8 # v4.2.2
         with:
           subject-name: ${{ steps.image.outputs.image }}
-          subject-digest: ${{ steps.push.outputs.digest }}
+          subject-digest: ${{ steps.image.outputs.amd64 }}
+          push-to-registry: true
+
+      - name: Attest arm64 image build provenance
+        uses: actions/attest-build-provenance@4d101475d8b20a2381f78447822ac1eab6504dd8 # v4.2.2
+        with:
+          subject-name: ${{ steps.image.outputs.image }}
+          subject-digest: ${{ steps.image.outputs.arm64 }}
+          push-to-registry: true
+
+      - name: Attest image index build provenance
+        uses: actions/attest-build-provenance@4d101475d8b20a2381f78447822ac1eab6504dd8 # v4.2.2
+        with:
+          subject-name: ${{ steps.image.outputs.image }}
+          subject-digest: ${{ steps.image.outputs.index }}
           push-to-registry: true
 
       - uses: oras-project/setup-oras@005458ad77f1c8facd38a094e4af2e69e5607ff4 # v2.0.2
 
-      - name: Push the binary to GitHub Container Registry
-        id: binary
+      - name: Push the binaries to GitHub Container Registry
         env:
-          RCP_BIN: ${{ env.DIST }}/rcp
-          RCP_BUILD_TARGET: x86_64-unknown-linux-gnu
-          RCP_BUILD_REVISION: ${{ github.sha }}
-          RCP_BUILD_SOURCE: ${{ github.server_url }}/${{ github.repository }}
           ORAS_TOKEN: ${{ github.token }}
         run: |
+          parts="${RUNNER_TEMP}/release-parts"
+          repo="ghcr.io/${GITHUB_REPOSITORY_OWNER,,}/rcp-binary"
+          version=${TAG#v}
           echo "$ORAS_TOKEN" | oras login ghcr.io --username "$GITHUB_ACTOR" --password-stdin
-          RCP_BUILD_RUSTC=$(head -1 "$DIST/baseline/build-toolchain.txt")
-          RCP_BUILD_VERSION=${TAG#v}
-          export RCP_BUILD_RUSTC RCP_BUILD_VERSION
-          bash scripts/publish.sh "ghcr.io/${GITHUB_REPOSITORY_OWNER,,}/rcp-binary" "${TAG#v}"
+          x86="$parts/release-x86_64-unknown-linux-gnu"
+          arm="$parts/release-aarch64-unknown-linux-gnu"
+          chmod 0755 "$x86/rcp" "$arm/rcp"
+          [ -x "$x86/rcp" ] && [ -x "$arm/rcp" ]
+          out=$(mktemp)
+          RCP_BIN="$x86/rcp" \
+            RCP_BUILD_TARGET=x86_64-unknown-linux-gnu \
+            RCP_BUILD_REVISION="$GITHUB_SHA" \
+            RCP_BUILD_SOURCE="${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}" \
+            RCP_BUILD_RUSTC="$(head -1 "$x86/build-toolchain.txt")" \
+            RCP_BUILD_VERSION="$version" \
+            GITHUB_OUTPUT="$out" \
+            bash scripts/publish.sh "$repo" "$version"
+          x86_digest=$(sed -n 's/^digest=//p' "$out")
+          oras tag "$repo:$version" "$repo:$version-x86_64-unknown-linux-gnu"
+          out=$(mktemp)
+          RCP_BIN="$arm/rcp" \
+            RCP_BUILD_TARGET=aarch64-unknown-linux-gnu \
+            RCP_BUILD_REVISION="$GITHUB_SHA" \
+            RCP_BUILD_SOURCE="${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}" \
+            RCP_BUILD_RUSTC="$(head -1 "$arm/build-toolchain.txt")" \
+            RCP_BUILD_VERSION="$version" \
+            GITHUB_OUTPUT="$out" \
+            bash scripts/publish.sh "$repo" "$version-aarch64-unknown-linux-gnu"
+          arm_digest=$(sed -n 's/^digest=//p' "$out")
+          [[ "$x86_digest" =~ ^sha256:[0-9a-f]{64}$ ]] || { echo "unexpected x86 digest: $x86_digest" >&2; exit 1; }
+          [[ "$arm_digest" =~ ^sha256:[0-9a-f]{64}$ ]] || { echo "unexpected arm digest: $arm_digest" >&2; exit 1; }
+          cosign sign --yes "$repo@$x86_digest"
+          cosign sign --yes "$repo@$arm_digest"
 
-      - name: Sign the binary artifact
+      - name: Publish to crates.io
         env:
-          TARGET: ${{ steps.binary.outputs.target }}
-          DIGEST: ${{ steps.binary.outputs.digest }}
-        run: cosign sign --yes "$TARGET@$DIGEST"
+          CARGO_REGISTRY_TOKEN: ${{ secrets.CARGO_REGISTRY_TOKEN }}
+        run: |
+          case "$GITHUB_EVENT_NAME" in
+            push)
+              [ "$GITHUB_REF_TYPE" = tag ] || { echo "not a tag release; skipping crates.io publish"; exit 0; }
+              ;;
+            workflow_dispatch) ;;
+            *)
+              echo "not a tag release; skipping crates.io publish"
+              exit 0
+              ;;
+          esac
+          if [ -z "${CARGO_REGISTRY_TOKEN:-}" ]; then
+            echo "CARGO_REGISTRY_TOKEN is not set; skipping crates.io publish"
+            exit 0
+          fi
+          rustup toolchain install stable --profile minimal && rustup default stable
+          cargo publish --locked

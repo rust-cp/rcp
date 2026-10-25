@@ -1,6 +1,7 @@
 # Minimal Linux runtime image
 
-This image supports Linux x86-64. Its scratch final stage contains the GNU libc
+This image supports Linux x86-64 and Linux ARM64. A release tag is a multi-arch index of
+those two platforms. Its scratch final stage contains the GNU libc
 loader and required dynamic libraries, CA roots, GSSAPI libraries, an SSH client,
 and license notices. It contains no shell, compiler, Python, or package manager.
 It is neither a static executable nor a FIPS-validated distribution.

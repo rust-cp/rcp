@@ -11,6 +11,8 @@
 pub mod client;
 pub mod config;
 pub mod sigv4;
+/// In-process S3 stand-in used by the integration tests.
+#[doc(hidden)]
 pub mod testserver;
 pub mod xml;
 
